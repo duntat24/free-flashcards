@@ -1,0 +1,12 @@
+.new-flashcard-set {
+  margin: 2em;
+}
+.new-flashcard {
+  padding: 1em;
+  margin: 0.5em;
+  width: min-content;
+  border: 2px solid darkgray;
+}
+.add-flashcard-button {
+  margin: 0.5em;
+}
