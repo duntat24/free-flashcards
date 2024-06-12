@@ -1,12 +1,17 @@
 .new-flashcard-set {
-  margin: 2em;
+  margin: auto;
+  text-align: center; 
+  border: 1px solid black;
 }
 .new-flashcard {
   padding: 1em;
-  margin: 0.5em;
+  margin: auto;
   width: min-content;
+  text-align: center;
   border: 2px solid darkgray;
 }
 .add-flashcard-button {
   margin: 0.5em;
+}
+.whole-page {
 }
