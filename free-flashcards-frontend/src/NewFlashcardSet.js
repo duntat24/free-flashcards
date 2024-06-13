@@ -1,8 +1,9 @@
 import AddFlashcardButton from './AddFlashcardButton.js';
 import NewFlashcard from './NewFlashcard.js';
+import SaveNewSetButton from './SaveNewSetButton.js';
 import { useState } from 'react';
 
-export default function FlashcardSet() {
+export default function NewFlashcardSet({addFlashcardSet}) {
     const [cards, updateCards] = useState([]);
     const [nextId, updateNextId] = useState(0);
 
@@ -18,17 +19,28 @@ export default function FlashcardSet() {
             card.id === cardId ? {id: cardId, prompt: newPrompt, response: newResponse}: card
         ));
     }
+    function saveSet() {
+        addFlashcardSet(cards);
+    }
+    // seems this is causing an error because each element doesn't have a unique id
     let cardList = cards.map(card => (
-        <NewFlashcard
-            card={card}
-            removeCard={removeCard}
-            updateCard={updateCard}
-        />
+        <li key={card.id} className="new-flashcard">
+            <NewFlashcard
+                card={card}
+                removeCard={removeCard}
+                updateCard={updateCard}
+            />
+        </li>
     ));
     return <div className="new-flashcard-set">
         <AddFlashcardButton
             addCard={addCard}
         />
-        {cardList}
+        <SaveNewSetButton
+            save={saveSet}
+        />
+        <ul className="new-card-list">
+            {cardList}
+        </ul>
     </div>
 }

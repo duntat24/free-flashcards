@@ -13,5 +13,8 @@
 .add-flashcard-button {
   margin: 0.5em;
 }
+.new-card-list {
+  list-style-type: none;
+}
 .whole-page {
 }
