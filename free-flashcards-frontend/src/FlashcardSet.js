@@ -13,16 +13,19 @@ export default function FlashcardSet() {
     function removeCard(removedId) {
         updateCards(cards.filter(card => card.id !== removedId));
     }
-    function updateCard(newCard, index) {
-
+    function updateCard(newPrompt, newResponse, cardId) {
+        updateCards(cards.map(card => 
+            card.id === cardId ? {id: cardId, prompt: newPrompt, response: newResponse}: card
+        ));
     }
     let cardList = cards.map(card => (
         <NewFlashcard
             card={card}
             removeCard={removeCard}
+            updateCard={updateCard}
         />
     ));
-    return <div class="new-flashcard-set">
+    return <div className="new-flashcard-set">
         <AddFlashcardButton
             addCard={addCard}
         />

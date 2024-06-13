@@ -2,7 +2,7 @@ import FlashcardSet from './FlashcardSet.js';
 import './FreeFlashcards.css';
 
 function FlashcardApp() {
-  return <div class="whole-page">
+  return <div className="whole-page">
     <FlashcardSet/>
   </div>
 }
