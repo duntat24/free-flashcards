@@ -1,4 +1,5 @@
 import NewFlashcardSet from './NewFlashcardSet.js';
+import SetsDisplay from './SetsDisplay.js';
 import './FreeFlashcards.css';
 import { useState } from 'react';
 
@@ -21,6 +22,9 @@ export default function FlashcardApp() {
   return <div className="whole-page">
     <NewFlashcardSet
       addFlashcardSet={addFlashcardSet}
+    />
+    <SetsDisplay
+      flashcardSets={flashcardSets}
     />
   </div>
 }
