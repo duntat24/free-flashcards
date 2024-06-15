@@ -16,5 +16,21 @@
 .new-card-list {
   list-style-type: none;
 }
-.whole-page {
+.sets-list {
+  list-style-type: none;
+}
+.collapsed-displayed-set {
+  border: 1px solid darkgray;
+}
+.expanded-displayed-set {
+  border: 1px solid darkgray;
+}
+ul.sets-list > li {
+  background-color: white;
+}
+ul.sets-list > li:hover {
+  background-color: lightgray;
+}
+ul.sets-list > li:active {
+  background-color: darkgray;
 }
