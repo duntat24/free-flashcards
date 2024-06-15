@@ -20,13 +20,17 @@
   list-style-type: none;
 }
 .collapsed-displayed-set {
-  border: 1px solid darkgray;
+  height: 4em;
+  line-height: 4em;
+  text-align: center;
 }
 .expanded-displayed-set {
-  border: 1px solid darkgray;
+  display: flex;
+  justify-content: center;
 }
 ul.sets-list > li {
   background-color: white;
+  border: 1px solid darkgray;
 }
 ul.sets-list > li:hover {
   background-color: lightgray;

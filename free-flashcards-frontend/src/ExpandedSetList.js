@@ -4,6 +4,7 @@ export default function ExpandedSetList({set}) {
     ));
     return <figure>
         <figcaption><b>{set.title}</b></figcaption>
+        <button onClick={() => alert("beginning studying (placeholder)")} className="begin-studying">Study</button>
         <figcaption>Prompts:</figcaption>
         <ul className="expanded-set-list">
             {displaySet}

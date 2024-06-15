@@ -7,14 +7,22 @@ export default function SetsDisplay({flashcardSets}) {
     // an expanded list item should display all of its prompts but won't show its response to not spoil answers for users
     const [expandedItemId, updateExpandedItemId] = useState(null); 
     
-    flashcardSets.map(set => (console.log(set.title + " : " + set.cards.length + " card(s).")));
+    function setExpandedItemId(id) {
+        if (id === expandedItemId) {
+            updateExpandedItemId(null);
+        } else {
+            updateExpandedItemId(id);
+        }
+    }
     
+    // the displayed sets in collapsed state should be larger so they're easier to click, clicking an expanded set should probably collapse it
     let displayedSets = flashcardSets.map(set => (
         // checks if a set is the expanded set and sets style and displayed content as approrpiate
-        <li onClick={() => updateExpandedItemId(set.id)} key={set.id} 
+        <li onClick={() => setExpandedItemId(set.id)} key={set.id} 
         className={set.id === expandedItemId ? "expanded-displayed-set ": "collapsed-displayed-set"}>
-                {set.id === expandedItemId ? <ExpandedSetList set={set}/> : 
-                "Title: " + set.title + ". " + set.cards.length + " card(s)"}
+                {set.id === expandedItemId ? 
+                <ExpandedSetList set={set}/> : 
+                "Title: " + set.title + ". Cards: " + set.cards.length}
         </li>
     ));
 
