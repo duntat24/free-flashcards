@@ -7,6 +7,7 @@ export default function SetsDisplay({flashcardSets}) {
     // an expanded list item should display all of its prompts but won't show its response to not spoil answers for users
     const [expandedItemId, updateExpandedItemId] = useState(null); 
     
+    // this function updates the currently expanded study set. Attempting to expand an already expanded set collapses it
     function setExpandedItemId(id) {
         if (id === expandedItemId) {
             updateExpandedItemId(null);
@@ -20,9 +21,9 @@ export default function SetsDisplay({flashcardSets}) {
         // checks if a set is the expanded set and sets style and displayed content as approrpiate
         <li onClick={() => setExpandedItemId(set.id)} key={set.id} 
         className={set.id === expandedItemId ? "expanded-displayed-set ": "collapsed-displayed-set"}>
-                {set.id === expandedItemId ? 
+                {set.id === expandedItemId ? // the content in an expanded set is much more complicated than in a collapsed set
                 <ExpandedSetList set={set}/> : 
-                "Title: " + set.title + ". Cards: " + set.cards.length}
+                "Title: " + set.title + ". Cards: " + set.cards.length} 
         </li>
     ));
 
