@@ -1,5 +1,6 @@
 import NewFlashcardSet from './NewFlashcardSet.js';
 import SetsDisplay from './SetsDisplay.js';
+import StudyFlashcards from './StudyFlashcards.js';
 import './FreeFlashcards.css';
 import { useState } from 'react';
 
@@ -8,6 +9,9 @@ export default function FlashcardApp() {
   const [flashcardSets, updateFlashcardSets] = useState([]);
   // this is the next id that will be associated with a user-generated flashcard set. A set's id be updated on a call to the backend to ensure uniqueness
   const [nextId, setNextId] = useState(0);
+  // this contains the set currently being studied. If it is null, then we are in the set creation page
+  // this may need to be updated to allow for 3 or more pages to be displayed on the application
+  const [studiedSet, setStudiedSet] = useState(null);
 
   // adds the specified cards and title to the user's sets of flashcards
   function addFlashcardSet(addedSet, setTitle) {
@@ -22,13 +26,22 @@ export default function FlashcardApp() {
     }
   }
   
-  return <div className="whole-page">
+  let setCreationView = <>
     <NewFlashcardSet
       addFlashcardSet={addFlashcardSet}
     />
     <SetsDisplay
       flashcardSets={flashcardSets}
+      setStudiedSet={setStudiedSet}
     />
+  </>
+  let studyView = <>
+    <StudyFlashcards
+      setStudiedSet={setStudiedSet}
+    />
+  </>
+  return <div className="whole-page">
+    {studiedSet === null ? setCreationView : studyView}
   </div>
 }
 
