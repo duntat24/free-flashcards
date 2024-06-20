@@ -38,3 +38,18 @@ ul.sets-list > li:hover {
 ul.sets-list > li:active {
   background-color: darkgray;
 }
+.study-page {
+  padding: 3em;
+  text-align: center;
+}
+.current-flashcard {
+  border: 2px solid darkgray;
+  padding: 1em;
+  margin: 1em;
+}
+.flashcard-navigation {
+  margin: 0.5em;
+}
+.stop-studying {
+  margin: 1.5em;
+}

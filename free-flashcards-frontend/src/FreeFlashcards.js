@@ -38,6 +38,7 @@ export default function FlashcardApp() {
   let studyView = <>
     <StudyFlashcards
       setStudiedSet={setStudiedSet}
+      studiedSet={studiedSet}
     />
   </>
   return <div className="whole-page">
