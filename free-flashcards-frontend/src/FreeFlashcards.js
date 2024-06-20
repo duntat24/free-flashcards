@@ -25,7 +25,14 @@ export default function FlashcardApp() {
       console.log(flashcardSets[i]);
     }
   }
-  
+
+  // deletes the set with the specified id
+  function deleteFlashcardSet(deletedSetId) {
+    updateFlashcardSets(flashcardSets.filter(set => set.id !== deletedSetId)); // including only the sets whose ids do not match the deleted id
+  }
+
+  // this holds the content on the page where users can create and browse their study sets
+  // SetsDisplay needs a delete feature for sets
   let setCreationView = <>
     <NewFlashcardSet
       addFlashcardSet={addFlashcardSet}
@@ -33,8 +40,11 @@ export default function FlashcardApp() {
     <SetsDisplay
       flashcardSets={flashcardSets}
       setStudiedSet={setStudiedSet}
+      deleteFlashcardSet={deleteFlashcardSet}
     />
   </>
+  // this holds the content on the page where users can study their created sets
+  // needs a quiz mode to allow for free response as well as drawn & recorded responses
   let studyView = <>
     <StudyFlashcards
       setStudiedSet={setStudiedSet}
