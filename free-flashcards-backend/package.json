@@ -1,0 +1,17 @@
+{
+  "name": "free-flashcards-backend",
+  "version": "1.0.0",
+  "description": "free-flashcards application api",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "http-errors": "^2.0.0",
+    "mongoose": "^8.5.1"
+  }
+}
