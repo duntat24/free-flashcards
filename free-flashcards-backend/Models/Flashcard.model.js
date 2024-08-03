@@ -6,7 +6,7 @@ const FlashcardSchema = new Schema({
         type: String,
         required: true
     },
-    response: { // TODO: need types of responses such as audio or drawn responses
+    response: { // TODO: need types of responses such as audio or drawn responses (images)
         type: String,
         require: true
     }

@@ -40,7 +40,7 @@ app.use((error, request, response, next) => {
     })
 });
 
-const PORT = process.env.port || 3001; // if the provided .env file has no port then we default to 3000
+const PORT = process.env.port || 3000; // if the provided .env file has no port then we default to 3000
 app.listen(PORT, () => {
     console.log("Server started on port " + PORT);
 });

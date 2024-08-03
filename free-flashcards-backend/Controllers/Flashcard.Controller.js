@@ -17,4 +17,19 @@ module.exports = {
         }
         console.log("TEST SUCCEESS!")
     },
+
+    createFlashcard : async (request, response, next) => { // add a flashcard to the database
+        console.log(request.body);
+        try {
+            const card = new Flashcard(request.body); // this works, assuming the input is valid
+            const result = await card.save();
+            response.send(result);
+        } catch (error) {
+            console.log(error.message);
+            if (error.name === "ValidationError") { // catching invalid input
+                next(createError(422, error.message))
+            }
+            next(error);
+        }
+    }
 }

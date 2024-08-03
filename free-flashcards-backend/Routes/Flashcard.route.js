@@ -8,4 +8,6 @@ const FlashcardController = require("../Controllers/Flashcard.Controller");
 
 router.get('/', FlashcardController.testMethod); // should print "TEST SUCCEESS!" to the server console
 
+router.post('/', FlashcardController.createFlashcard); // should add a single flashcard
+
 module.exports = router;
