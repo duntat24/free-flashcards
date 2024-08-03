@@ -31,5 +31,25 @@ module.exports = {
             }
             next(error);
         }
+    },
+
+    deleteFlashcard : async (request, response, next) => {
+        console.log("Deleting");
+        try {
+            console.log("deleting");
+            const deletedId = request.params.id; 
+            console.log(request.params.id);
+            const result = await Flashcard.findByIdAndDelete({_id: deletedId}); // finds and deletes an entry matching the id
+            if (result === null) { // this triggers if the id is formatted correctly, but doesn't map to any products
+                throw createError(404, "Flashcard does not exist");
+            }
+            response.send(result);
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof mongoose.CastError) { // this triggers if the objectid is not formatted correctly
+                next(createError(400, "invalid flashcard id"));
+            }
+            next(error)
+        }
     }
 }

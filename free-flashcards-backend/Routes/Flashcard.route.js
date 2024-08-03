@@ -10,4 +10,6 @@ router.get('/', FlashcardController.testMethod); // should print "TEST SUCCEESS!
 
 router.post('/', FlashcardController.createFlashcard); // should add a single flashcard
 
+router.delete('/:id', FlashcardController.deleteFlashcard); // deletes a single flashcard with a specified objectID
+
 module.exports = router;
