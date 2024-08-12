@@ -51,5 +51,22 @@ module.exports = {
             }
             next(error)
         }
-    }
+    },
+
+    findFlashcardById: async (request, response, next) => { // :id lets us get the id
+        try {
+            const searchedId = request.params.id; // getting the id in the route parameter
+            const result = await Flashcard.findById(searchedId); // findById searches by the provided id
+            if (result === null) { // this triggers if the id is formatted correctly, but doesn't map to any products
+                throw createError(404, "Flashcard does not exist");
+            }
+            response.send(result);
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof mongoose.CastError) { // this triggers if the objectid is not formatted correctly
+                next(createError(400, "invalid flashcard id"));
+            }
+            next(error);
+        }
+    },
 }

@@ -8,8 +8,10 @@ const FlashcardController = require("../Controllers/Flashcard.Controller");
 
 router.get('/', FlashcardController.testMethod); // should print "TEST SUCCEESS!" to the server console
 
-router.post('/', FlashcardController.createFlashcard); // should add a single flashcard
+router.post('/', FlashcardController.createFlashcard); // adds a single flashcard
 
 router.delete('/:id', FlashcardController.deleteFlashcard); // deletes a single flashcard with a specified objectID
+
+router.get('/:id', FlashcardController.findFlashcardById); // gets a single flashcard matching the specified id
 
 module.exports = router;
