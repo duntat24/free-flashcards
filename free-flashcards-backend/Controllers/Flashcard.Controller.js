@@ -69,4 +69,27 @@ module.exports = {
             next(error);
         }
     },
+
+    updateFlashcard : async (request, response, next) => { // :id lets us get the id
+        try {
+            const updatedId = request.params.id;
+            const updatedBody = request.body;
+            const options = {new: true}; // this results in the newly updated flashcard being returned, otherwise the replaced entry is returned
+            const result = await Flashcard.findByIdAndUpdate({_id: updatedId}, {prompt: updatedBody.prompt, response: updatedBody.response}, options);
+            // findByIdAndUpdate accepts first parameter of the id to be updated, second parameter the updated fields and their values,
+            // and 3rd parameter is options about what is returned
+            if (result === null) {
+                throw createError(404, "Flaschard does not exist"); // valid id format but no matching db entry
+            }
+            response.send(result);
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof mongoose.CastError) { // triggers if objectid is not formatted correctly
+                next(createError(400, "invalid flashcard id"));
+            } else if (error.name === "ValidationError") {
+                next(createError(422, error.message));
+            }
+            next(error); 
+        }
+    }
 }

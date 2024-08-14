@@ -14,4 +14,6 @@ router.delete('/:id', FlashcardController.deleteFlashcard); // deletes a single 
 
 router.get('/:id', FlashcardController.findFlashcardById); // gets a single flashcard matching the specified id
 
+router.put('/:id', FlashcardController.updateFlashcard); // updates the flashcard with the specified ID, if it exists
+
 module.exports = router;
