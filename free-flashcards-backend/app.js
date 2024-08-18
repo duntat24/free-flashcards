@@ -11,8 +11,10 @@ app.use(express.json()); // this allows us to do request.body and send request.b
 require("./initDB")(); // running the arrow function in initDB
 
 const FlashcardRoute = require("./Routes/Flashcard.route");
+const StudySetRoute = require("./Routes/StudySet.route");
 
 app.use('/cards', FlashcardRoute);
+app.use('/sets', StudySetRoute);
 
 app.get('/', (request, response, next) => {
     response.send("Home page");
