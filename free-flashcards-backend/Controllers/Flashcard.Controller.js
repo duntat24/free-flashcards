@@ -34,9 +34,7 @@ module.exports = {
     },
 
     deleteFlashcard : async (request, response, next) => {
-        console.log("Deleting");
         try {
-            console.log("deleting");
             const deletedId = request.params.id; 
             console.log(request.params.id);
             const result = await Flashcard.findByIdAndDelete({_id: deletedId}); // finds and deletes an entry matching the id
