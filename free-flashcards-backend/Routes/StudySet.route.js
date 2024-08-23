@@ -8,6 +8,8 @@ const StudySetController = require("../Controllers/StudySet.Controller");
 
 router.post('/', StudySetController.createStudySet); // creates a new study set
 
-router.delete('/:id', StudySetController.deleteStudySet); // deletes the study set matching the provided id
+router.delete('/:id', StudySetController.deleteStudySetById); // deletes the study set matching the provided id
+
+router.get('/:id', StudySetController.getStudySetById); // gets a study study set matching the provided id
 
 module.exports = router;

@@ -26,8 +26,8 @@ module.exports = {
             next(error);
         }
     },
-    // this will need to delete all referenced flashcards from the set as well
-    deleteStudySet : async (request, response, next) => { // delete a study set from the database
+    // this will need to delete all referenced flashcards from the set as well (NOT DONE)
+    deleteStudySetById : async (request, response, next) => { // delete a study set from the database
         try {
             const deletedId = request.params.id; 
             const result = await StudySet.findByIdAndDelete({_id: deletedId}); // finds and deletes an entry matching the id
@@ -41,6 +41,23 @@ module.exports = {
                 next(createError(400, "invalid study set id"));
             }
             next(error)
+        }
+    },
+
+    getStudySetById : async (request, response, next) => { // get a study set from the database matching a specific id
+        try {
+            const searchedId = request.params.id;
+            const result = await StudySet.findById({_id: searchedId});
+            if (result === null) { // this will occur if the id has a valid format but doesn't match any sets in the database
+                throw createError(404, "Study Set does not exist");
+            }
+            response.send(result);
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof mongoose.CastError) { // this triggers if the objectid is not formatted correctly
+                next(createError(400, "invalid study set id"));
+            }
+            next(error);
         }
     }
 }
