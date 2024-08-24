@@ -74,8 +74,6 @@ module.exports = {
             const updatedBody = request.body;
             const options = {new: true}; // this results in the newly updated flashcard being returned, otherwise the replaced entry is returned
             const result = await Flashcard.findByIdAndUpdate({_id: updatedId}, {prompt: updatedBody.prompt, response: updatedBody.response}, options);
-            // findByIdAndUpdate accepts first parameter of the id to be updated, second parameter the updated fields and their values,
-            // and 3rd parameter is options about what is returned
             if (result === null) {
                 throw createError(404, "Flaschard does not exist"); // valid id format but no matching db entry
             }

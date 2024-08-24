@@ -59,5 +59,25 @@ module.exports = {
             }
             next(error);
         }
+    },
+
+    updateStudySetTitle : async (request, response, next) => {
+        try {
+            const updatedId = request.params.id;
+            const updatedBody = request.body; // this method only needs the title from the body
+            const result = await StudySet.findByIdAndUpdate({_id: updatedId}, {title: updatedBody.title});
+            if (result === null) {
+                throw createError(404, "Study set does not exist"); // valid id format but no matching db entry
+            }
+            response.send(result);
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof mongoose.CastError) { // triggers if provided id is not formatted correctly
+                next(createError(400, "invalid study set id"));
+            } else if (error.name === "ValidationError") { // request body is somehow invalid
+                next(createError(422, error.message));
+            }
+            next(error); 
+        }
     }
 }

@@ -12,4 +12,6 @@ router.delete('/:id', StudySetController.deleteStudySetById); // deletes the stu
 
 router.get('/:id', StudySetController.getStudySetById); // gets a study study set matching the provided id
 
+router.put('/:id', StudySetController.updateStudySetTitle); // updates the title of the study set with the provided id
+
 module.exports = router;
