@@ -23,7 +23,6 @@ module.exports = {
     deleteFlashcard : async (request, response, next) => {
         try {
             const deletedId = request.params.id; 
-            console.log(request.params.id);
             const result = await Flashcard.findByIdAndDelete({_id: deletedId}); // finds and deletes an entry matching the id
             if (result === null) { // this triggers if the id is formatted correctly, but doesn't map to any products
                 throw createError(404, "Flashcard does not exist");
@@ -84,6 +83,21 @@ module.exports = {
         } catch (error) {
             createdId.message = error.message;
             createdId.name = error.name;
+        }
+    },
+
+    deleteCard : async (cardId, status) => {
+        try {
+            const result = await Flashcard.findByIdAndDelete({_id: cardId}); // finds and deletes an entry matching the id
+            if (result === null) { // this triggers if the id is formatted correctly, but doesn't map to any products
+                status.message = "Flashcard does not exist";
+                status.name = 404;
+                return;
+            }
+            status.name = 200;
+        } catch (error) {
+            status.message = error.message;
+            status.name = error.name;
         }
     }
     

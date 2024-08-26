@@ -4,6 +4,8 @@ const router = express.Router();
 
 const StudySetController = require("../Controllers/StudySet.Controller");
 
+router.get('/', StudySetController.testConnection); // purely to establish that we can actually connect
+
 // handles requests on the route <root>/sets
 
 router.post('/', StudySetController.createStudySet); // creates a new study set
@@ -16,6 +18,7 @@ router.put('/:id', StudySetController.updateStudySetTitle); // updates the title
 
 router.post('/:id', StudySetController.addCardToSet); // adds a flashcard to the study set with the specified id
 
+router.delete('/:set_id/:card_id', StudySetController.deleteCardFromSet);
 // need to be able to do CRUD on flashcards array, code is already in the controller just need to handle routing
 
 module.exports = router;

@@ -13,6 +13,11 @@ const createError = require("http-errors");
 
 // define the needed functions in the module exports
 module.exports = {
+
+    testConnection : async (request, response, next) => {
+        response.send(request.body);
+    },
+
     createStudySet : async (request, response, next) => { // add a study set to the database
         console.log(request.body);
         try {
@@ -86,12 +91,14 @@ module.exports = {
         try {
             const addedSetId = request.params.id;
             const flashcardBody = request.body; 
-            var createdId = {_id: " "};
+            let createdId = {_id: " "};
             // we are passing the createdId object by reference since returning values from the FlashcardController is difficult
             await FlashcardController.createNewFlashcard(flashcardBody.prompt, flashcardBody.response, createdId);
 
             if (createdId._id !== " ") { // checking if an error occurred and the id field wasn't updated
-                const result = await addCardIdToSetArray(addedSetId, createdId._id); 
+                const studySet = await StudySet.findById(addedSetId);
+                studySet.cards.push(createdId._id); // adding the id to the sets' array of ids
+                const result = await studySet.save();
                 response.send(result);
             } else { // error handling based on results from the helper function
                 let error = {name: createdId.name, message: createdId.message};
@@ -111,14 +118,39 @@ module.exports = {
             }
             next(error); 
         }
-    }
-}
+    },
 
-async function addCardIdToSetArray(targetSetId, addedId) { // this is a helper function for the addCardIdToSet method
-    let currentCards = (await StudySet.findById({_id: targetSetId})).cards; // getting the matching set's array of cards
-    if (currentCards === null) { // the targeted set doesn't exist
-        throw createError(404, "Study set does not exist");
+    deleteCardFromSet : async (request, response, next) => {
+        try {
+            const modifiedSetId = request.params.set_id;
+            const deletedCardId = request.params.card_id;
+            let status = {name: 200};
+            // passing a status by reference to allow for nicer error handling on sending the response
+            await FlashcardController.deleteCard(deletedCardId, status);
+            if (status.name === 200) { // if the status code is OK after deleting the card 
+                const studySet = await StudySet.findById(modifiedSetId);
+                studySet.cards.remove(deletedCardId);
+                const result = await studySet.save();
+                response.send(result);
+            } else { // error handling based on results from the helper function
+                let error = {name: status.name, message: status.message};
+                console.log(error.message);
+                if (error.name === 404) {
+                    throw createError(404, "Flashcard does not exist");
+                } else if (error.name === "ValidationError") { // input to create flashcard was invalid
+                    next(createError(422, error.message));
+                }
+                next(error); // some other error occurred, potentially an internal server error
+            }
+
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof mongoose.CastError) { // triggers if provided id is not formatted correctly
+                next(createError(400, "invalid study set id"));
+            } else if (error.name === "ValidationError") { // request body is somehow invalid
+                next(createError(422, error.message));
+            }
+            next(error); 
+        }
     }
-    currentCards.push(addedId);
-    return await StudySet.findByIdAndUpdate({_id: targetSetId}, {cards: currentCards});
 }

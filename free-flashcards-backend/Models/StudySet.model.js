@@ -6,10 +6,7 @@ const StudySetSchema = new Schema({
         type: String,
         required: true
     }, 
-    cards: {
-        type: Array,
-        required: true
-    }
+    cards: [Schema.Types.ObjectId]
 });
 
 
