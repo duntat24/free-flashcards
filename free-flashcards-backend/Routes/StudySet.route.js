@@ -14,4 +14,8 @@ router.get('/:id', StudySetController.getStudySetById); // gets a study study se
 
 router.put('/:id', StudySetController.updateStudySetTitle); // updates the title of the study set with the provided id
 
+router.post('/:id', StudySetController.addCardToSet); // adds a flashcard to the study set with the specified id
+
+// need to be able to do CRUD on flashcards array, code is already in the controller just need to handle routing
+
 module.exports = router;

@@ -1,4 +1,5 @@
 const StudySet = require("../Models/StudySet.model");
+const FlashcardController = require("../Controllers/Flashcard.Controller");
 
 /*
     This will likely need to interface with the FlashcardController and may even take over the 
@@ -79,5 +80,45 @@ module.exports = {
             }
             next(error); 
         }
+    },
+
+    addCardToSet : async (request, response, next) => {
+        try {
+            const addedSetId = request.params.id;
+            const flashcardBody = request.body; 
+            var createdId = {_id: " "};
+            // we are passing the createdId object by reference since returning values from the FlashcardController is difficult
+            await FlashcardController.createNewFlashcard(flashcardBody.prompt, flashcardBody.response, createdId);
+
+            if (createdId._id !== " ") { // checking if an error occurred and the id field wasn't updated
+                const result = await addCardIdToSetArray(addedSetId, createdId._id); 
+                response.send(result);
+            } else { // error handling based on results from the helper function
+                let error = {name: createdId.name, message: createdId.message};
+                console.log(error.message);
+                if (error.name === "ValidationError") { // input to create flashcard was invalid
+                    next(createError(422, error.message));
+                }
+                next(error); // some other error occurred, potentially an internal server error
+            }
+
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof mongoose.CastError) { // triggers if provided id is not formatted correctly
+                next(createError(400, "invalid study set id"));
+            } else if (error.name === "ValidationError") { // request body is somehow invalid
+                next(createError(422, error.message));
+            }
+            next(error); 
+        }
     }
+}
+
+async function addCardIdToSetArray(targetSetId, addedId) { // this is a helper function for the addCardIdToSet method
+    let currentCards = (await StudySet.findById({_id: targetSetId})).cards; // getting the matching set's array of cards
+    if (currentCards === null) { // the targeted set doesn't exist
+        throw createError(404, "Study set does not exist");
+    }
+    currentCards.push(addedId);
+    return await StudySet.findByIdAndUpdate({_id: targetSetId}, {cards: currentCards});
 }

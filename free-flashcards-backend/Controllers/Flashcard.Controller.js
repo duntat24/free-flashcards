@@ -7,7 +7,6 @@ const createError = require("http-errors");
 // define the needed functions in the module's exports 
 module.exports = {
     createFlashcard : async (request, response, next) => { // add a flashcard to the database
-        console.log(request.body);
         try {
             const card = new Flashcard(request.body); // this works, assuming the input is valid
             const result = await card.save();
@@ -75,5 +74,18 @@ module.exports = {
             }
             next(error); 
         }
+    },
+
+    createNewFlashcard : async (cardPrompt, cardResponse, createdId) => {
+        try {
+            const card = new Flashcard({prompt: cardPrompt, response: cardResponse}); 
+            const result = await card.save();
+            createdId._id = result._id;
+        } catch (error) {
+            createdId.message = error.message;
+            createdId.name = error.name;
+        }
     }
+    
 }
+

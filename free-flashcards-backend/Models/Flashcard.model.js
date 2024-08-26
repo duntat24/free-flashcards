@@ -6,11 +6,13 @@ const FlashcardSchema = new Schema({
         type: String,
         required: true
     },
-    response: { // TODO: need types of responses such as audio or drawn responses (images)
+    response: { 
         type: String,
         require: true
     }
 });
+
+// TODO: need types of responses such as audio or drawn responses (images)
 
 const Flashcard = mongoose.model('flashcard', FlashcardSchema);
 module.exports = Flashcard;
