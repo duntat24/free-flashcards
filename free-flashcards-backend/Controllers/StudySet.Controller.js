@@ -19,7 +19,6 @@ module.exports = {
     },
 
     createStudySet : async (request, response, next) => { // add a study set to the database
-        console.log(request.body);
         try {
             const set = new StudySet({"title": request.body.title, "cards": []}); // raises a 400 error if no title is included
             const result = await set.save();
@@ -36,11 +35,12 @@ module.exports = {
     deleteStudySetById : async (request, response, next) => { // delete a study set from the database
         try {
             const deletedId = request.params.id; 
-            const result = await StudySet.findByIdAndDelete({_id: deletedId}); // finds and deletes an entry matching the id
+            const result = await StudySet.findByIdAndDelete(deletedId); // finds and deletes an entry matching the id
             if (result === null) { // this triggers if the id is formatted correctly, but doesn't map to any products
-                throw createError(404, "Study Set does not exist");
+                next(createError(404, "Study Set does not exist"));
+            } else {
+                response.send(result);
             }
-            response.send(result);
         } catch (error) {
             console.log(error.message);
             if (error instanceof mongoose.CastError) { // this triggers if the objectid is not formatted correctly
