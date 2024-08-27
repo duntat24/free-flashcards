@@ -53,11 +53,12 @@ module.exports = {
     getStudySetById : async (request, response, next) => { // get a study set from the database matching a specific id
         try {
             const searchedId = request.params.id;
-            const result = await StudySet.findById({_id: searchedId});
+            const result = await StudySet.findById(searchedId);
             if (result === null) { // this will occur if the id has a valid format but doesn't match any sets in the database
-                throw createError(404, "Study Set does not exist");
+                next(createError(404, "Study Set does not exist"));
+            } else {
+                response.send(result);
             }
-            response.send(result);
         } catch (error) {
             console.log(error.message);
             if (error instanceof mongoose.CastError) { // this triggers if the objectid is not formatted correctly
