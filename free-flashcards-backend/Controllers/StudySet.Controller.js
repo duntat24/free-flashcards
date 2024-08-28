@@ -72,11 +72,12 @@ module.exports = {
         try {
             const updatedId = request.params.id;
             const updatedBody = request.body; // this method only needs the title from the body
-            const result = await StudySet.findByIdAndUpdate({_id: updatedId}, {title: updatedBody.title});
-            if (result === null) {
-                throw createError(404, "Study set does not exist"); // valid id format but no matching db entry
+            const result = await StudySet.findByIdAndUpdate(updatedId, {title: updatedBody.title});
+            if (result === null) { 
+                next(createError(404, "Study set does not exist")); 
+            } else {
+                response.send(result);
             }
-            response.send(result);
         } catch (error) {
             console.log(error.message);
             if (error instanceof mongoose.CastError) { // triggers if provided id is not formatted correctly
