@@ -75,14 +75,17 @@ module.exports = {
         }
     },
 
-    createNewFlashcard : async (cardPrompt, cardResponse, createdId) => {
+    createNewFlashcard : async (cardPrompt, cardResponse, createdId, next) => {
         try {
             const card = new Flashcard({prompt: cardPrompt, response: cardResponse}); 
             const result = await card.save();
             createdId._id = result._id;
         } catch (error) {
-            createdId.message = error.message;
-            createdId.name = error.name;
+            console.log(error.message);
+            if (error.name === "ValidationError") { // input to create flashcard was invalid
+                next(createError(422, error.message));
+            }
+            next(error); // some other error occurred, potentially HTTP 500 
         }
     },
 

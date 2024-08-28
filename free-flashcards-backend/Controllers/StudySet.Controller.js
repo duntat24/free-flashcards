@@ -92,25 +92,22 @@ module.exports = {
     addCardToSet : async (request, response, next) => {
         try {
             const addedSetId = request.params.id;
+            const studySet = await StudySet.findById(addedSetId);
+            if (studySet === null) { // if it's null then no entry in the db matches the provided id
+                next(createError(404, "Study Set does not exist"));
+                return;
+            } 
             const flashcardBody = request.body; 
             let createdId = {_id: " "};
             // we are passing the createdId object by reference since returning values from the FlashcardController is difficult
-            await FlashcardController.createNewFlashcard(flashcardBody.prompt, flashcardBody.response, createdId);
+            // we pass next so the helper function can do error handling itself
+            await FlashcardController.createNewFlashcard(flashcardBody.prompt, flashcardBody.response, createdId, next);
 
             if (createdId._id !== " ") { // checking if an error occurred and the id field wasn't updated
-                const studySet = await StudySet.findById(addedSetId);
                 studySet.cards.push(createdId._id); // adding the id to the sets' array of ids
                 const result = await studySet.save();
                 response.send(result);
-            } else { // error handling based on results from the helper function
-                let error = {name: createdId.name, message: createdId.message};
-                console.log(error.message);
-                if (error.name === "ValidationError") { // input to create flashcard was invalid
-                    next(createError(422, error.message));
-                }
-                next(error); // some other error occurred, potentially an internal server error
-            }
-
+            } // if this if block isn't executed then a 422 or 500 occurred on the method call
         } catch (error) {
             console.log(error.message);
             if (error instanceof mongoose.CastError) { // triggers if provided id is not formatted correctly
