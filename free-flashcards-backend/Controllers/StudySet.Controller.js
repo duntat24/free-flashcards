@@ -14,7 +14,8 @@ const createError = require("http-errors");
 // define the needed functions in the module exports
 module.exports = {
 
-    testConnection : async (request, response, next) => {
+        // DELETE LATER THIS SHOULD NOT BE IN THE FINAL CODE
+    testConnection : async (request, response, next) => { // echoes back the request contents
         response.send(request.body);
     },
 
@@ -25,8 +26,8 @@ module.exports = {
             response.send(result);
         } catch (error) {
             console.log(error.message);
-            if (error.name === "ValidationError") { // catching invalid input
-                next(createError(400, error.message)) // error code for BAD REQUEST
+            if (error.name === "ValidationError") { // request body is not valid e.g. does not contain a title for the set
+                next(createError(400, error.message)) 
             }
             next(error);
         }
@@ -73,7 +74,7 @@ module.exports = {
             const updatedId = request.params.id;
             const updatedBody = request.body; // this method only needs the title from the body
             const result = await StudySet.findByIdAndUpdate(updatedId, {title: updatedBody.title});
-            if (result === null) { 
+            if (result === null) { // no set was found matching the provided id
                 next(createError(404, "Study set does not exist")); 
             } else {
                 response.send(result);
@@ -82,9 +83,7 @@ module.exports = {
             console.log(error.message);
             if (error instanceof mongoose.CastError) { // triggers if provided id is not formatted correctly
                 next(createError(400, "invalid study set id"));
-            } else if (error.name === "ValidationError") { // request body is somehow invalid
-                next(createError(422, error.message));
-            }
+            } 
             next(error); 
         }
     },
@@ -112,9 +111,7 @@ module.exports = {
             console.log(error.message);
             if (error instanceof mongoose.CastError) { // triggers if provided id is not formatted correctly
                 next(createError(400, "invalid study set id"));
-            } else if (error.name === "ValidationError") { // request body is somehow invalid
-                next(createError(422, error.message));
-            }
+            } 
             next(error); 
         }
     },
@@ -140,8 +137,6 @@ module.exports = {
             console.log(error.message);
             if (error instanceof mongoose.CastError) { // triggers if provided id is not formatted correctly
                 next(createError(400, "invalid study set id"));
-            } else if (error.name === "ValidationError") { // request body is somehow invalid
-                next(createError(422, error.message));
             } 
             next(error);
         }
@@ -162,9 +157,9 @@ module.exports = {
             if (status.code === 200) { // if the status code is 200, the card was successfully updated. 
                 response.send(status.body);
             } // if the code is not 200 then an error was caught and handled inside the FlashcardController 
-        } catch (error) { // not much is happening in this controller other than fetching the study set so we don't need to do much error handling
+        } catch (error) { 
             console.log(error.message);
-            if (error instanceof mongoose.CastError) {
+            if (error instanceof mongoose.CastError) { // triggers if the study set id in the request URL is not a valid objectid
                 next(createError(400, "Invalid study set id"));
             }
             next(error);
