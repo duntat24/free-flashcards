@@ -123,33 +123,27 @@ module.exports = {
         try {
             const modifiedSetId = request.params.set_id;
             const deletedCardId = request.params.card_id;
-            let status = {name: 200};
+            const studySet = await StudySet.findById(modifiedSetId);
+            if (studySet === null) { // if it's null then no entry in the db matches the provided id
+                next(createError(404, "Study set does not exist"));
+                return;
+            }
+            let status = {name: 0};
             // passing a status by reference to allow for nicer error handling on sending the response
-            await FlashcardController.deleteCard(deletedCardId, status);
+            await FlashcardController.deleteCard(deletedCardId, status, next);
             if (status.name === 200) { // if the status code is OK after deleting the card 
-                const studySet = await StudySet.findById(modifiedSetId);
                 studySet.cards.remove(deletedCardId);
                 const result = await studySet.save();
                 response.send(result);
-            } else { // error handling based on results from the helper function
-                let error = {name: status.name, message: status.message};
-                console.log(error.message);
-                if (error.name === 404) {
-                    throw createError(404, "Flashcard does not exist");
-                } else if (error.name === "ValidationError") { // input to create flashcard was invalid
-                    next(createError(422, error.message));
-                }
-                next(error); // some other error occurred, potentially an internal server error
-            }
-
+            } 
         } catch (error) {
             console.log(error.message);
             if (error instanceof mongoose.CastError) { // triggers if provided id is not formatted correctly
                 next(createError(400, "invalid study set id"));
             } else if (error.name === "ValidationError") { // request body is somehow invalid
                 next(createError(422, error.message));
-            }
-            next(error); 
+            } 
+            next(error);
         }
     }
 }

@@ -89,18 +89,22 @@ module.exports = {
         }
     },
 
-    deleteCard : async (cardId, status) => {
+    deleteCard : async (cardId, status, next) => {
         try {
-            const result = await Flashcard.findByIdAndDelete({_id: cardId}); // finds and deletes an entry matching the id
+            const result = await Flashcard.findByIdAndDelete(cardId); // finds and deletes an entry matching the id
             if (result === null) { // this triggers if the id is formatted correctly, but doesn't map to any products
-                status.message = "Flashcard does not exist";
+                next(createError(404, "Flashcard does not exist"));
                 status.name = 404;
-                return;
+            } else {
+                status.name = 200; // if result isn't null then something was deleted successfully
             }
-            status.name = 200;
         } catch (error) {
-            status.message = error.message;
-            status.name = error.name;
+            console.log(error.message);
+            console.log(error.name);
+            if (error instanceof mongoose.CastError) { // this triggers if the objectid is not formatted correctly
+                next(createError(400, "invalid flashcard id"));
+            }
+            next(error);
         }
     }
     
