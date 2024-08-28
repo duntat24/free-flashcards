@@ -10,6 +10,7 @@ const FlashcardController = require("../Controllers/Flashcard.Controller");
 const mongoose = require("mongoose");
 const express = require("express");
 const createError = require("http-errors");
+const Flashcard = require("../Models/Flashcard.model");
 
 // define the needed functions in the module exports
 module.exports = {
@@ -36,11 +37,25 @@ module.exports = {
     deleteStudySetById : async (request, response, next) => { // delete a study set from the database
         try {
             const deletedId = request.params.id; 
-            const result = await StudySet.findByIdAndDelete(deletedId); // finds and deletes an entry matching the id
+            //const result = await StudySet.findByIdAndDelete(deletedId); // finds and deletes an entry matching the id
+            const result = await StudySet.findById(deletedId); // not deleting it, FOR TESTING PURPOSES
             if (result === null) { // this triggers if the id is formatted correctly, but doesn't map to any products
                 next(createError(404, "Study Set does not exist"));
             } else {
-                response.send(result);
+                const deletedCards = result.cards;
+                console.log(deletedCards);
+                let errorOccurred = false;
+                // deleting all the cards in the set to avoid cards in the DB with no references to them
+                for (let i = 0; i < deletedCards.length; i++) { 
+                    let status = {name : 0};
+                    await FlashcardController.deleteCard(deletedCards[i], status, next);
+                    if (status.name !== 200) { // if all validation rules of the DB and API are followed then no errors should occur, but if one does occur we want to know about it
+                        errorOccurred = true;
+                    }
+                }
+                if (!errorOccurred) {
+                    response.send(result);
+                }
             }
         } catch (error) {
             console.log(error.message);
