@@ -106,6 +106,28 @@ module.exports = {
             }
             next(error);
         }
+    },
+
+    updateCard : async(cardId, updatedBody, status, next) => {
+        try {
+            const options = {new: true}; // this results in the newly updated flashcard being returned, otherwise the replaced entry is returned
+            const result = await Flashcard.findByIdAndUpdate(cardId, updatedBody, options);
+            if (result === null) {
+                next(createError(404, "Flaschard does not exist")); // valid id format but no matching db entry
+                status.code = 404;
+            } else {
+                status.code = 200;
+                status.body = result;
+            }
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof mongoose.CastError) { // triggers if objectid is not formatted correctly
+                next(createError(400, "invalid flashcard id"));
+            } else if (error.name === "ValidationError") {
+                next(createError(422, error.message));
+            }
+            next(error); 
+        }
     }
     
 }

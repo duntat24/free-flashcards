@@ -21,4 +21,5 @@ router.post('/:id', StudySetController.addCardToSet); // adds a flashcard to the
 router.delete('/:set_id/:card_id', StudySetController.deleteCardFromSet);
 // need to be able to do CRUD on flashcards array, code is already in the controller just need to handle routing
 
+router.put('/:set_id/:card_id', StudySetController.updateCardInSet);
 module.exports = router;
