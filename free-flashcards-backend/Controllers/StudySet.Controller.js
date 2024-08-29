@@ -1,23 +1,20 @@
 const StudySet = require("../Models/StudySet.model");
 const FlashcardController = require("../Controllers/Flashcard.Controller");
-
-/*
-    This will likely need to interface with the FlashcardController and may even take over the 
-    responsibilities of the FlashcardRoute, as users will generally be interacting with the application 
-    via their sets and considering how they're modifying their sets
-*/
-
 const mongoose = require("mongoose");
-const express = require("express");
 const createError = require("http-errors");
-const Flashcard = require("../Models/Flashcard.model");
 
 // define the needed functions in the module exports
 module.exports = {
 
-        // DELETE LATER THIS SHOULD NOT BE IN THE FINAL CODE
-    testConnection : async (request, response, next) => { // echoes back the request contents
-        response.send(request.body);
+    // this method should only hit a USERS' study sets in an actual system, but at the moment the system 
+    // is only intended to have 1 user per instance of itself
+    getAllStudySets : async (request, response, next) => { // this method is necessary so the client can know what ids it needs to be accessing
+        try {
+            const sets = await StudySet.find();
+            response.send({study_sets: sets});
+        } catch (error) {
+            next(error); // some sort of internal server error would have to happen for an error here
+        }
     },
 
     createStudySet : async (request, response, next) => { // add a study set to the database
@@ -33,17 +30,15 @@ module.exports = {
             next(error);
         }
     },
-    // this will need to delete all referenced flashcards from the set as well (NOT DONE)
+
     deleteStudySetById : async (request, response, next) => { // delete a study set from the database
         try {
             const deletedId = request.params.id; 
-            //const result = await StudySet.findByIdAndDelete(deletedId); // finds and deletes an entry matching the id
-            const result = await StudySet.findById(deletedId); // not deleting it, FOR TESTING PURPOSES
+            const result = await StudySet.findByIdAndDelete(deletedId); 
             if (result === null) { // this triggers if the id is formatted correctly, but doesn't map to any products
                 next(createError(404, "Study Set does not exist"));
             } else {
                 const deletedCards = result.cards;
-                console.log(deletedCards);
                 let errorOccurred = false;
                 // deleting all the cards in the set to avoid cards in the DB with no references to them
                 for (let i = 0; i < deletedCards.length; i++) { 
@@ -84,7 +79,7 @@ module.exports = {
         }
     },
 
-    updateStudySetTitle : async (request, response, next) => {
+    updateStudySetTitle : async (request, response, next) => { // update the title of a study set with a specified id
         try {
             const updatedId = request.params.id;
             const updatedBody = request.body; // this method only needs the title from the body
@@ -103,7 +98,7 @@ module.exports = {
         }
     },
 
-    addCardToSet : async (request, response, next) => {
+    addCardToSet : async (request, response, next) => { // add a card to the study set with the specified id
         try {
             const addedSetId = request.params.id;
             const studySet = await StudySet.findById(addedSetId);
@@ -131,7 +126,7 @@ module.exports = {
         }
     },
 
-    deleteCardFromSet : async (request, response, next) => {
+    deleteCardFromSet : async (request, response, next) => { // delete the specified flashcard from the set with the specified id
         try {
             const modifiedSetId = request.params.set_id;
             const deletedCardId = request.params.card_id;
@@ -157,7 +152,7 @@ module.exports = {
         }
     },
 
-    updateCardInSet : async (request, response, next) => {
+    updateCardInSet : async (request, response, next) => { // update the specified flashcard in the specified set
         try {
             const modifiedSetId = request.params.set_id;
             const updatedCardId = request.params.card_id;
