@@ -11,13 +11,13 @@ module.exports = {
         try {
             const searchedId = request.params.id; // getting the id in the route parameter
             const result = await Flashcard.findById(searchedId); // findById searches by the provided id
-            if (result === null) { // this triggers if the id is formatted correctly, but doesn't map to any products
+            if (result === null) { // id is formatted correctly, but doesn't map to any flashcards
                 throw createError(404, "Flashcard does not exist");
             }
             response.send(result);
         } catch (error) {
             console.log(error.message);
-            if (error instanceof mongoose.CastError) { // this triggers if the objectid is not formatted correctly
+            if (error instanceof mongoose.CastError) { // objectid is not formatted correctly
                 next(createError(400, "invalid flashcard id"));
             }
             next(error);
@@ -31,17 +31,17 @@ module.exports = {
             createdId._id = result._id;
         } catch (error) {
             console.log(error.message);
-            if (error.name === "ValidationError") { // input to create flashcard was invalid
-                next(createError(422, error.message));
+            if (error.name === "ValidationError") { // invalid post request body, likely misnamed or missing field
+                next(createError(400, error.message));
             }
-            next(error); // some other error occurred, potentially HTTP 500 
+            next(error);
         }
     },
 
     deleteCard : async (cardId, status, next) => {
         try {
             const result = await Flashcard.findByIdAndDelete(cardId); // finds and deletes an entry matching the id
-            if (result === null) { // this triggers if the id is formatted correctly, but doesn't map to any products
+            if (result === null) { // id is formatted correctly, but doesn't map to any flashcards
                 next(createError(404, "Flashcard does not exist"));
                 status.name = 404;
             } else {
@@ -49,7 +49,7 @@ module.exports = {
             }
         } catch (error) {
             console.log(error.message);
-            if (error instanceof mongoose.CastError) { // this triggers if the objectid is not formatted correctly
+            if (error instanceof mongoose.CastError) { // objectid is not formatted correctly
                 next(createError(400, "invalid flashcard id"));
             }
             next(error);
@@ -71,9 +71,7 @@ module.exports = {
             console.log(error.message);
             if (error instanceof mongoose.CastError) { // triggers if objectid is not formatted correctly
                 next(createError(400, "invalid flashcard id"));
-            } else if (error.name === "ValidationError") {
-                next(createError(422, error.message));
-            }
+            } 
             next(error); 
         }
     }
