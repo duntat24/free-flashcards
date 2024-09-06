@@ -6,4 +6,6 @@ const FlashcardController = require("../Controllers/Flashcard.Controller");
 
 router.get('/:id', FlashcardController.findFlashcardById); // gets a single flashcard matching the specified id
 
+router.post('/:id/file', FlashcardController.addFileToCard); // adds a file to the flashcard with the specified id
+
 module.exports = router;

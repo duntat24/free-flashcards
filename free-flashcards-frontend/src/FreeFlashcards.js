@@ -1,6 +1,7 @@
 import NewFlashcardSet from './NewFlashcardSet.js';
 import SetsDisplay from './SetsDisplay.js';
 import StudyFlashcards from './StudyFlashcards.js';
+import FileUploader from './FileUploader.js';
 import './FreeFlashcards.css';
 import { useState } from 'react';
 
@@ -53,6 +54,7 @@ export default function FlashcardApp() {
   </>
   return <div className="whole-page">
     {studiedSet === null ? setCreationView : studyView}
+    <FileUploader/>
   </div>
 }
 

@@ -1,11 +1,18 @@
 const express = require("express");
 const createError = require("http-errors");
 const dotenv = require("dotenv").config();
+const cors = require("cors");
+const fileUpload = require("express-fileupload");
 
 console.log(dotenv.parsed);
 
 const app = express();
 app.use(express.json()); // this allows us to do request.body and send request.body (which are jsons)
+app.use(express.urlencoded({extended: true}));
+
+app.use(cors({origin: 'http://localhost:3000'}));
+
+app.use(fileUpload());
 
 // initializeDB
 require("./initDB")(); // running the arrow function in initDB

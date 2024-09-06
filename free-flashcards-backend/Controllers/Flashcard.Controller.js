@@ -1,20 +1,23 @@
 const Flashcard = require("../Models/Flashcard.model");
 const mongoose = require("mongoose");
 const createError = require("http-errors");
+const mongodb = require("mongodb");
+const binary = mongodb.Binary;
+const fileSystem = require("fs")
 
 // define the needed functions in the module's exports 
 module.exports = {
 
     findFlashcardById: async (request, response, next) => { // used to retrieve flashcards from the DB
-        // NOTE: this is the only FlashcardController method exposed by the API - all other methods are used by 
-        //       the StudySetController
         try {
             const searchedId = request.params.id; // getting the id in the route parameter
-            const result = await Flashcard.findById(searchedId); // findById searches by the provided id
+            const result = await Flashcard.findById(searchedId);            
+            
             if (result === null) { // id is formatted correctly, but doesn't map to any flashcards
-                throw createError(404, "Flashcard does not exist");
+                next(createError(404, "Flashcard does not exist"));
+            } else {
+                response.send(result);
             }
-            response.send(result);
         } catch (error) {
             console.log(error.message);
             if (error instanceof mongoose.CastError) { // objectid is not formatted correctly
@@ -56,7 +59,7 @@ module.exports = {
         }
     },
 
-    updateCard : async(cardId, updatedBody, status, next) => {
+    updateCard : async (cardId, updatedBody, status, next) => {
         try {
             const options = {new: true}; // this results in the newly updated flashcard being returned, otherwise the replaced entry is returned
             const result = await Flashcard.findByIdAndUpdate(cardId, updatedBody, options);
@@ -73,6 +76,39 @@ module.exports = {
                 next(createError(400, "invalid flashcard id"));
             } 
             next(error); 
+        }
+    },
+
+    addFileToCard : async (request, response, next) => {
+        try {
+            const addedFile = request.files.file;
+            const cardId = request.params.id;
+            if (addedFile === undefined) { // can't handle with mongoose schema validation errors b/c file isn't required
+                next(createError(400, "Request does not contain a file"));
+                return;
+            }
+            const fileBinary = new binary(addedFile.data); // we need to get the binary from the file to convert it to an easily stored format
+            const options = {new: true};
+            
+            // need code to detect file type: png, jpg, svg? mp3, wav, m4a
+            // this can be detected via the mimetype attribute in the file
+            // we also need code to detect the size of the file binary to prevent files > 0.5 MB (maybe even smaller) from being uploaded
+
+            const file = {fileType: "png", data: fileBinary};
+            const result = await Flashcard.findByIdAndUpdate(cardId, {file: file}, options);
+            if (result === null) { // the id we're updating with doesn't exist in the db
+                next(createError(404, "Flashcard does not exist"));
+            } 
+            response.send({_id: result._id}); // we don't want to send the entire binary when we update the card
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof mongoose.CastError) {
+                next(createError(400, "Invalid flashcard id"));
+            }
+            if (error.name === "BSONError") {
+                next(createError(422, "Invalid file attached"));
+            }
+            next(error);
         }
     }
     
