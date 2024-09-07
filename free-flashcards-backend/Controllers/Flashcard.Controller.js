@@ -82,19 +82,20 @@ module.exports = {
 
     addFileToCard : async (request, response, next) => {
         try {
+            if (request.files === null) {
+                next(createError(400, "No file attached"));
+                return;
+            }
             const addedFile = request.files.file;
             const cardId = request.params.id;
-            if (addedFile === undefined) { // can't handle with mongoose schema validation errors b/c file isn't required
-                next(createError(400, "Request does not contain a file"));
+            const fileValidationResult = validateFileInput(addedFile);
+            if (fileValidationResult.code !== 200) {
+                next(createError(fileValidationResult.code, fileValidationResult.message));
                 return;
             }
-            if (addedFile.data.length > MAX_FILE_SIZE) { // we should also do this check on the client side so users don't need to wait for server confirmation
-                next(createError(422, "Attached file is too large"));
-                return;
-            }
+
             const fileBinary = new binary(addedFile.data); // we need to get the binary from the file to convert it to an easily stored format
-            const options = {new: true};
-            
+            const options = {new: true};            
             const file = {fileType: addedFile.mimetype, data: fileBinary};
             const result = await Flashcard.findByIdAndUpdate(cardId, {file: file}, options);
             if (result === null) { // the id we're updating with doesn't exist in the db
@@ -113,5 +114,32 @@ module.exports = {
         }
     }
     
+}
+
+
+// this function verifies that uploaded files are within size and type constraints
+// it returns the entity to be returned to the client (status code and error message, if applicable)
+function validateFileInput(file) {
+    let response = {code: 200, message: "OK"};
+    if (file === null || file === undefined) {
+        response.code = 400;
+        response.message = "Request does not contain a file";
+        return response; // we need to return response immediately here to not get errors for checking undefined fields
+    }
+    if (file.data.length > MAX_FILE_SIZE) {
+        response.code = 422;
+        response.message = "Attached file is too large";
+    }
+    const fileMimetypeArray = file.mimetype.split("/"); // separates keywords in the file's description, e.g. [image, jpeg]
+    if (fileMimetypeArray[0] !== "image" && fileMimetypeArray[0] !== "audio") {
+        response.code = 400
+        response.message = "Attached files must be image or audio files and cannot be PDFs";
+    }
+    if (fileMimetypeArray[1] === "tiff" || fileMimetypeArray[1] === "tiff-fx") {
+        response.code = 400
+        response.message = "Attached files cannot be in the following formats: tiff";
+    }
+
+    return response;
 }
 

@@ -11,21 +11,17 @@ export default function FileUploader() {
 
     function handleUploadChange(event) { // puts files attached to the component's form into the file state variable
         const changedFile = event.target.files[0];
-        if (changedFile === undefined) {
+
+        const validateFileResult = validateFileInput(changedFile, MAX_FILE_SIZE);
+        if (validateFileResult === null) {
             setFile(null);
-        } else if (changedFile.size > MAX_FILE_SIZE) {
-            alert("Attached file is too large. Files be less than 0.5 MB");
+        } else if (validateFileResult === "") { // validateFileInput returns the appropriate error message if a file input is invalid
+            setFile(changedFile);
+        } else {
+            alert(validateFileResult);
             event.target.value = null;
             setFile(null);
-        } else {
-            setFile(changedFile);
         }
-
-
-        // TODO: Enforce upload types (require image/ or audio/ prefix on the image mimetype)
-        // This prevents invalid uploads (executables, code, pdfs)
-
-
     }
 
     function handleUploadSubmit(event) { // uploads the file attached to the form submission
@@ -39,13 +35,12 @@ export default function FileUploader() {
             return;
         }
         if (file.size > MAX_FILE_SIZE) {
-            alert("Attached file is too large. Files must have be less than 0.5 MB");
+            alert("Attached file is too large. Files must be less than 0.5 MB");
             return;
         }
         const url = "http://localhost:3001/cards/66cfd27b38e5367fabb70f8f/file" // this is ONLY FOR TESTING and should be modifiable
         const formData = new FormData();
         formData.append("file", file); 
-        formData.append("fileName", file.fileName);
         const requestConfiguration = {
             headers: {
               'content-type': 'multipart/form-data', // important to tell the server what is in the request
@@ -56,6 +51,7 @@ export default function FileUploader() {
             alert("Uploaded successfully");
         }).catch((error) => {
             console.log(error);
+            alert(error.response.data.error.message); // this should never happen if the user's javascript hasn't been modified
         });
     }
 
@@ -63,7 +59,6 @@ export default function FileUploader() {
         event.preventDefault(); // prevents page refresh 
         const url = "http://localhost:3001/cards/66cfd27b38e5367fabb70f8f"
         axios.get(url).then((response) => {
-            //const fileBase64String = btoa(String.fromCharCode(...new Uint8Array(response.data.file.data.data)));
             const fileBase64String = arrayBufferToBase64(response.data.file.data.data);
             setFileString(fileBase64String);
             setFileMimetype(response.data.file.fileType);
@@ -75,7 +70,6 @@ export default function FileUploader() {
     let uploadedFile = (fileString && fileMimetype) ? generateUploadJSX(fileMimetype, fileString) : <></>; 
     return <>
         <form onSubmit={handleUploadSubmit}>
-            <input type="text" name="name" placeholder="File Name.." /><br />
             <input type="file" onChange={handleUploadChange}/> <br /> <br />
             <input type="submit" value="Upload File" />
         </form>
@@ -96,7 +90,6 @@ export default function FileUploader() {
         MP3
         M4A
         WAV
-    TIFF does not work in all browsers. These uploads should not be allowed so as to not confuse users
     */
 function generateUploadJSX(mimetype, fileString) {
     const mimetypeTokens = mimetype.split("/"); // mimetypes are of the form {type}/{format} e.g. image/png 
@@ -107,12 +100,32 @@ function generateUploadJSX(mimetype, fileString) {
     }
 }
 
+// This method takes a file buffer from a request and converts it to a Base64 string to be displayed by our application
 function arrayBufferToBase64(buffer) {
     var binary = '';
     var bytes = new Uint8Array(buffer);
-    var len = bytes.byteLength;
-    for (var i = 0; i < len; i++) {
-        binary += String.fromCharCode( bytes[ i ] );
+    for (let i = 0; i < bytes.byteLength; i++) { // by constructing our array iteratively we avoid errors from the call stack being too large
+        binary += String.fromCharCode(bytes[i]);
     }
     return window.btoa(binary);
+}
+
+// this function verifies that uploaded files are within size and type constraints
+// if the file does not fit within those constraints, it returns an error message to be displayed
+// if it does, it returns a blank string
+function validateFileInput(file, MAX_FILE_SIZE) {
+    if (file === null || file === undefined) {
+        return null;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+        return "Attached file is too large. Files must be less than 0.5 MB";
+    }
+    const fileMimetypeArray = file.type.split("/"); // separates keywords in the file's description, e.g. [image, jpeg]
+    if (fileMimetypeArray[0] !== "image" && fileMimetypeArray[0] !== "audio") {
+        return "Attached files must be image or audio files and cannot be PDFs";
+    }
+    if (fileMimetypeArray[1] === "tiff" || fileMimetypeArray[1] === "tiff-fx") { // TIFF files do not work in most browsers
+        return "Attached files cannot be in the following formats: TIFF";
+    }
+    return "";
 }
