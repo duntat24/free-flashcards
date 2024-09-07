@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 const createError = require("http-errors");
 const mongodb = require("mongodb");
 const binary = mongodb.Binary;
-const fileSystem = require("fs")
+
+const MAX_FILE_SIZE = 500000; // defines maximum file size in bytes
 
 // define the needed functions in the module's exports 
 module.exports = {
@@ -87,6 +88,10 @@ module.exports = {
                 next(createError(400, "Request does not contain a file"));
                 return;
             }
+            if (addedFile.data.length > MAX_FILE_SIZE) { // we should also do this check on the client side so users don't need to wait for server confirmation
+                next(createError(422, "Attached file is too large"));
+                return;
+            }
             const fileBinary = new binary(addedFile.data); // we need to get the binary from the file to convert it to an easily stored format
             const options = {new: true};
             
@@ -106,7 +111,7 @@ module.exports = {
                 next(createError(400, "Invalid flashcard id"));
             }
             if (error.name === "BSONError") {
-                next(createError(422, "Invalid file attached"));
+                next(createError(400, "Invalid file attached"));
             }
             next(error);
         }

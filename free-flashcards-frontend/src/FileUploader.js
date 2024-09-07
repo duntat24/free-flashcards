@@ -3,11 +3,18 @@ import axios from 'axios';
 
 export default function FileUploader() {
 
+    const MAX_FILE_SIZE = 500000; // defines maximum file size in bytes
+
     const [file, setFile] = useState(null);
     const [fileString, setFileString] = useState(null); // contains URL of response file for the browser to display
 
     function handleUploadChange(event) { // puts files attached to the component's form into the file state variable
-        setFile(event.target.files[0]);
+        if (event.target.files[0].size > MAX_FILE_SIZE) {
+            alert("Attached file is too large. Files be less than 0.5 MB");
+            event.target.value = null;
+        } else {
+            setFile(event.target.files[0]);
+        }
     }
 
     function handleUploadSubmit(event) { // uploads the file attached to the form submission
@@ -18,6 +25,10 @@ export default function FileUploader() {
         }
         if (file.name === undefined) {
             alert("Please enter a file name");
+            return;
+        }
+        if (file.size > MAX_FILE_SIZE) {
+            alert("Attached file is too large. Files must have be less than 0.5 MB");
             return;
         }
         const url = "http://localhost:3001/cards/66cfd27b38e5367fabb70f8f/file" // this is ONLY FOR TESTING and should be modifiable
