@@ -95,11 +95,7 @@ module.exports = {
             const fileBinary = new binary(addedFile.data); // we need to get the binary from the file to convert it to an easily stored format
             const options = {new: true};
             
-            // need code to detect file type: png, jpg, svg? mp3, wav, m4a
-            // this can be detected via the mimetype attribute in the file
-            // we also need code to detect the size of the file binary to prevent files > 0.5 MB (maybe even smaller) from being uploaded
-
-            const file = {fileType: "png", data: fileBinary};
+            const file = {fileType: addedFile.mimetype, data: fileBinary};
             const result = await Flashcard.findByIdAndUpdate(cardId, {file: file}, options);
             if (result === null) { // the id we're updating with doesn't exist in the db
                 next(createError(404, "Flashcard does not exist"));
