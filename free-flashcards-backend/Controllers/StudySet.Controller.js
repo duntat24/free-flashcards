@@ -151,28 +151,4 @@ module.exports = {
             next(error);
         }
     },
-
-    updateCardInSet : async (request, response, next) => { // update the specified flashcard in the specified set
-        try {
-            const modifiedSetId = request.params.set_id;
-            const updatedCardId = request.params.card_id;
-            const studySet = await StudySet.findById(modifiedSetId);
-            if (studySet === null) { // no entry in the db matches the provided study set id
-                next(createError(404, "Study set does not exist"));
-                return;
-            }
-            let status = {code: 0};
-            // passing status object to allow the arrow function in the controller to modify it as a 'return'
-            await FlashcardController.updateCard(updatedCardId, request.body, status, next);
-            if (status.code === 200) { // if the status code is 200, the card was successfully updated. 
-                response.send(status.body);
-            } // if the code is not 200 then an error was caught and handled inside the FlashcardController 
-        } catch (error) { 
-            console.log(error.message);
-            if (error instanceof mongoose.CastError) { // triggers if the study set id in the request URL is not a valid objectid
-                next(createError(400, "Invalid study set id"));
-            }
-            next(error);
-        }
-    }
 }

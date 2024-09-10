@@ -20,6 +20,4 @@ router.post('/:id', StudySetController.addCardToSet); // adds a flashcard to the
 
 router.delete('/:set_id/:card_id', StudySetController.deleteCardFromSet); // deletes the specified card from the set
 
-router.put('/:set_id/:card_id', StudySetController.updateCardInSet); // updates the specified card in the set
-
 module.exports = router;

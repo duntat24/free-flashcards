@@ -8,4 +8,6 @@ router.get('/:id', FlashcardController.findFlashcardById); // gets a single flas
 
 router.post('/:id/file', FlashcardController.addFileToCard); // adds a file to the flashcard with the specified id
 
+router.put('/:id', FlashcardController.updateFlashcard); // updates the flashcard with the specified id
+
 module.exports = router;
