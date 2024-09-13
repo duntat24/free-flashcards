@@ -1,4 +1,4 @@
-import AddFlashcardButton from './AddFlashcardButton.js';
+import AddFlashcardButton from '../../AddFlashcardButton.js';
 import NewFlashcard from './NewFlashcard.js';
 import SaveNewSetButton from './SaveNewSetButton.js';
 import { useState } from 'react';
