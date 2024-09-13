@@ -1,4 +1,3 @@
-import NewFlashcardSet from './pages/CreateStudySet/CreateStudySet.js';
 import FileUploader from './FileUploader.js';
 import Navbar from './Navbar.js';
 import './FreeFlashcards.css';
@@ -9,6 +8,7 @@ import axios from 'axios';
 import StudySetEditor from './pages/StudySetEditor/StudySetEditor.js';
 import PracticeStudySet from './pages/PracticeStudySet/PracticeStudySet.js';
 import QuizStudySet from './pages/QuizStudySet/QuizStudySet.js';
+import CreateFlashcardSet from './pages/CreateStudySet/CreateStudySet.js';
 
 export default function FlashcardApp() {
   
@@ -34,18 +34,9 @@ export default function FlashcardApp() {
     });
   }, []); // may not be correct to have the dependency array be empty, we should be refreshing this when we make a new PUT/POST request
 
-  /*let setCreationView = <> // extracting this into another component
-    <NewFlashcardSet
-      addFlashcardSet={addFlashcardSet}
-    />
-    <SetsDisplay
-      flashcardSets={flashcardSets}
-      setStudiedSet={setStudiedSet}
-      deleteFlashcardSet={deleteFlashcardSet}
-    />
-  </>*/
   // this holds the content on the page where users can study their created sets
   // needs a quiz mode to allow for free response as well as drawn & recorded responses
+
   /*let studyView = <> // this should be extracted into its own component with a route
     <StudyFlashcards
       setStudiedSet={setStudiedSet}
@@ -56,7 +47,7 @@ export default function FlashcardApp() {
   return <div className="whole-page">
     <Navbar/>
     <Routes> 
-      <Route path="/sets" element={<NewFlashcardSet/>}/>
+      <Route path="/sets" element={<CreateFlashcardSet/>}/>
       <Route path="/*" element={<ViewStudySets
                                 studySets={studySets}  
                               />}/>
