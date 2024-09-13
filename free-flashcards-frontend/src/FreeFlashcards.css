@@ -19,15 +19,6 @@
 .sets-list {
   list-style-type: none;
 }
-.collapsed-displayed-set {
-  height: 4em;
-  line-height: 4em;
-  text-align: center;
-}
-.expanded-displayed-set {
-  display: flex;
-  justify-content: center;
-}
 ul.sets-list > li {
   background-color: white;
   border: 1px solid darkgray;
@@ -37,6 +28,16 @@ ul.sets-list > li:hover {
 }
 ul.sets-list > li:active {
   background-color: darkgray;
+}
+.set-display-title {
+  margin: 0;
+  border: 1px solid darkgray;
+  text-align: center;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.set-display-cardcount {
+  margin: 0;
 }
 .study-page {
   padding: 3em;

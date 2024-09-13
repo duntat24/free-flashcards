@@ -1,6 +1,12 @@
 import { useState } from 'react';
 
 export default function StudyFlashcards({setStudiedSet, studiedSet}) {
+    /*
+
+        TODO: Will need to use the id route parameter that is provided to identify the correct study set from the list of sets
+
+    */
+
     // this component will contain functionality to study user sets.
     // Functionality to be added: 'quiz mode' to allow for free response to prompts, as well as a mode to draw & record prompt responses
     
