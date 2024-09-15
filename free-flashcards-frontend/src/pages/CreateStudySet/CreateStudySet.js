@@ -29,6 +29,15 @@ export default function CreateFlashcardSet() {
             Need to make an API call here
         */
         console.log(cards);
+        console.log(validateCards(cards));
+        
+        // first need to validate that all the cards have a valid state - non-empty prompt and response
+        // if they have a file they must indicate whether it is for the prompt or response - whether the file is valid is handled for us by the NewFlashcard component
+
+        // once all flashcards are validated, we should POST a new study set with the specified title
+        // then, we should iterate through each card and initiate an ASYNCHRONOUS request
+            // if the request contains a file, we need to then call 
+
         /* updateCards([]); // clear the existing cards to make it simpler for the user to create another new set
         updateSetTitle(""); // clear the set title to make it easier for the user
 
@@ -60,4 +69,18 @@ export default function CreateFlashcardSet() {
             {cardList}
         </ul>
     </div>
+}
+
+// this method validates the provided array of cards so they can be stored on the server
+function validateCards(cards) {
+    for (let i = 0; i < cards.length; i++) {
+        const currentCard = cards[i];
+        if (currentCard.prompt === "" || currentCard.response === "") { // prompt and response can't be null
+            return false;
+        }
+        if (currentCard.fileJSON.file !== null && currentCard.fileJSON.isPrompt === null) { // user must indicate where a file should be displayed as part of a card 
+            return false;
+        }
+    }
+    return true;
 }

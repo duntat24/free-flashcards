@@ -3,12 +3,13 @@ import { useState } from 'react';
 export default function NewFlashcard({card, removeCard, updateCard}) {
     const MAX_FILE_SIZE = 500000; // defines maximum file size in bytes
 
-    // this variable contains a file that may be associated with this flashcard
+    // this contains a file that may be associated with this flashcard
     const [file, setFile] = useState(null);
     // this variable contains whether the associated file is meant to be displayed with the prompt or the response
     // a value of null indicates that nothing has been selected and/or no file has been uploaded
     const [fileIsPrompt, setFileIsPrompt] = useState(null);
-
+    // this indicates the users reponse type - text, drawn image, or recorded audio
+    const [responseType, setResponseType] = useState("text");
 
     function handleUploadChange(event) { // puts files attached to the component's form into the file state variable
         const changedFile = event.target.files[0];
@@ -30,20 +31,29 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
         }
     }
 
-    function promptFileAssociationChange() {
-        setFileIsPrompt(true);
-        updateCard(card.prompt, card.response, card.id, {file: card.fileJSON.file, isPrompt: true});
+    function handleFileAssociationChange(event) {
+        const isPrompt = event.target.value === "prompt"; // indicates whether the file will be associated with a prompt or a response
+        setFileIsPrompt(isPrompt); //
+        updateCard(card.prompt, card.response, card.id, {file: card.fileJSON.file, isPrompt: isPrompt});
     }
 
-    function responseFileAssociationChange() {
-        setFileIsPrompt(false);
-        updateCard(card.prompt, card.response, card.id, {file: card.fileJSON.file, isPrompt: false});
+    function handleResponseTypeChange(event) {
+        setResponseType(event.target.value);
+        console.log(responseType);
+    }
+
+    function handlePromptChange(event) {
+        updateCard(event.target.value, card.response, card.id, {file: file, isPrompt: fileIsPrompt})
+    } 
+
+    function handleResponseChange(event) {
+        updateCard(card.prompt, event.target.value, card.id, {file: file, isPrompt: fileIsPrompt})
     }
 
     let fileAssociationJSX = <>
-        <input type="radio" id="prompt" name="file-association" value="prompt" onChange={promptFileAssociationChange}/>
+        <input type="radio" id="prompt" name="file-association" value="prompt" onChange={handleFileAssociationChange}/>
         <label htmlFor="prompt">Prompt</label>
-        <input type="radio" id="response" name="file-association" value="response" onChange={responseFileAssociationChange}/>
+        <input type="radio" id="response" name="file-association" value="response" onChange={handleFileAssociationChange}/>
         <label htmlFor="response">Response</label>
         <br/>
     </>
@@ -52,11 +62,18 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
     // {"prompt" + (card.id + 1)} gives each input field a unique id so htmlFor can associate correctly
     return <> 
         <label htmlFor={"prompt" + (card.id + 1)}>Prompt: </label> <input type="text" name="prompt" id={"prompt" + (card.id + 1)} value={card.prompt} 
-            onChange={(e) => updateCard(e.target.value, card.response, card.id, {file: file, isPrompt: fileIsPrompt})}/>
+            onChange={handlePromptChange}/>
         
         <label htmlFor={"response" + (card.id + 1)}>Response: </label>
         <input type="text" name="response" id={"response" + (card.id + 1)} value={card.response}
-            onChange={(e) => updateCard(card.prompt, e.target.value, card.id, {file: file, isPrompt: fileIsPrompt})}/>
+            onChange={handleResponseChange}/>
+        
+        <label htmlFor={"response-type" + (card.id + 1)}>Response type: </label>
+        <select name="response-type" id={"response-type" + (card.id + 1)} onChange={handleResponseTypeChange}>
+            <option value="text">Text</option>
+            <option value="drawn">Drawn Image</option>
+            <option value="recorded">Record Audio</option>
+        </select>
         
         <input type="file" onChange={handleUploadChange}/>
         {file === null ? <></> : fileAssociationJSX}
