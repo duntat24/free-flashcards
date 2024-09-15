@@ -14,8 +14,11 @@ const FlashcardSchema = new Schema({
         fileType: { // we need to know how to construct the file data based on its format
             type: String
         }, 
-        data: {
+        data: { // the actual data contents of the file 
             type: Buffer
+        },
+        partOfPrompt: { // indicates whether this file should be displayed as part of a card's prompt or response
+            type: Boolean
         }
     }
 });
