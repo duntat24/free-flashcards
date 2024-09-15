@@ -2,6 +2,7 @@ import AddFlashcardButton from '../../AddFlashcardButton.js';
 import NewFlashcard from './NewFlashcard.js';
 import SaveNewSetButton from './SaveNewSetButton.js';
 import { useState } from 'react';
+import axios from 'axios';
 
 /*
     TODO: The props likely need a way to trigger a hook to make another fetch to the API - otherwise our additions won't be reflected on the home page
@@ -29,12 +30,36 @@ export default function CreateFlashcardSet() {
         /*
             Need to make an API call here
         */
-        console.log(cards);
-        console.log(validateCards(cards));
-        // also need to validate that set title isn't empty
+        // first need to validate that all the cards have a valid state - non-empty prompt and response, indicate whether file is for a prompt or response
+        if (!validateCards(cards) || setTitle === "") {
+            alert("Please ensure all entered data is valid"); // there should be more graceful error handling than this
+            return;
+            // 1. don't use alert
+            // 2. Clearly indicate which fields are invalid & why
+            // (should do this later, for now just get base functionality up)
+        }
+        const setPostURL = "http://localhost:3001/sets";
+        const newSetData = {title: setTitle};
+        axios.post(setPostURL, newSetData).then((response) => {
+            const newSetId = response.data._id; // we need the id of the newly created set so we can POST our flashcards to it
+            
+            // executing this logic after the response is received ensures we've received the set ID to post to
+            const cardPostURL = "http://localhost:3001/sets/" + newSetId;
+            for (let i = 0; i < cards.length; i++) {
+                let card = cards[i];
+                axios.post(cardPostURL, {prompt: card.prompt, response: card.response, 
+                        userResponseType: card.userResponseType}).then((response) => {
+                            console.log(response);
+                        }).catch((error) => {
+                            console.log(error);
+                            return; // we need more graceful handling than this, we don't want to partially post a set to the API
+                        });
+            }
+        }).catch((error) => {
+            console.log(error);
+            return; // we should immediately break out of our attempt to create a set if our request fails
+        });
         
-        // first need to validate that all the cards have a valid state - non-empty prompt and response
-        // if they have a file they must indicate whether it is for the prompt or response - whether the file is valid is handled for us by the NewFlashcard component
 
         // once all flashcards are validated, we should POST a new study set with the specified title
         // then, we should iterate through each card and initiate an ASYNCHRONOUS request
@@ -75,9 +100,11 @@ export default function CreateFlashcardSet() {
 
 // this method validates the provided array of cards so they can be stored on the server
 function validateCards(cards) {
+    if (cards.length === 0) { // sets should initially contain at least 1 card, fewer than that doesn't make sense
+        return false;
+    }
     for (let i = 0; i < cards.length; i++) {
         const currentCard = cards[i];
-        console.log(currentCard.fileJSON);
         if (currentCard.prompt === "" || currentCard.response === "") { // prompt and response can't be null
             return false;
         }
