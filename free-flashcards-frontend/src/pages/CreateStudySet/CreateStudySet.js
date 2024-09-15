@@ -13,15 +13,16 @@ export default function CreateFlashcardSet() {
     const [setTitle, updateSetTitle] = useState("");
 
     function addCard() { // this adds a blank card to the newly created set
-        updateCards([...cards, {id: nextCardId, prompt: "", response: ""}]);
+        updateCards([...cards, {id: nextCardId, prompt: "", response: "", fileJSON: {file: null, isPrompt: null}, userResponseType: "text"}]);
         updateNextCardId(nextCardId + 1);
     }
     function removeCard(removedId) {
         updateCards(cards.filter(card => card.id !== removedId)); // finding and removing the card with the specified id
     }
-    function updateCard(newPrompt, newResponse, cardId, newFileJSON) { // this is used to update cards when the user edits a prompt or response
+    function updateCard(newPrompt, newResponse, cardId, newFileJSON, newUserResponseType) { // this is used to update cards when the user edits a prompt or response
         updateCards(cards.map(card => 
-            card.id === cardId ? {id: cardId, prompt: newPrompt, response: newResponse, fileJSON: newFileJSON}: card
+            card.id === cardId ? {id: cardId, prompt: newPrompt, response: newResponse, 
+                                  fileJSON: newFileJSON, userResponseType: newUserResponseType}: card
         ));
     }
     function saveSet() {
@@ -30,6 +31,7 @@ export default function CreateFlashcardSet() {
         */
         console.log(cards);
         console.log(validateCards(cards));
+        // also need to validate that set title isn't empty
         
         // first need to validate that all the cards have a valid state - non-empty prompt and response
         // if they have a file they must indicate whether it is for the prompt or response - whether the file is valid is handled for us by the NewFlashcard component
@@ -75,6 +77,7 @@ export default function CreateFlashcardSet() {
 function validateCards(cards) {
     for (let i = 0; i < cards.length; i++) {
         const currentCard = cards[i];
+        console.log(currentCard.fileJSON);
         if (currentCard.prompt === "" || currentCard.response === "") { // prompt and response can't be null
             return false;
         }
@@ -82,5 +85,5 @@ function validateCards(cards) {
             return false;
         }
     }
-    return true;
+    return true; // all cards are valid if we get here
 }

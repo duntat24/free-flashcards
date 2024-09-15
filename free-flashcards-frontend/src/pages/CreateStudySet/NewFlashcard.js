@@ -8,8 +8,6 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
     // this variable contains whether the associated file is meant to be displayed with the prompt or the response
     // a value of null indicates that nothing has been selected and/or no file has been uploaded
     const [fileIsPrompt, setFileIsPrompt] = useState(null);
-    // this indicates the users reponse type - text, drawn image, or recorded audio
-    const [responseType, setResponseType] = useState("text");
 
     function handleUploadChange(event) { // puts files attached to the component's form into the file state variable
         const changedFile = event.target.files[0];
@@ -18,49 +16,48 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
         if (validateFileResult === null) {
             setFile(null);
             setFileIsPrompt(null);
-            updateCard(card.prompt, card.response, card.id, {file: null, isPrompt: null});
+            updateCard(card.prompt, card.response, card.id, {file: null, isPrompt: null}, card.userResponseType);
         } else if (validateFileResult === "") { // validateFileInput returns the appropriate error message if a file input is invalid
             setFile(changedFile);
-            updateCard(card.prompt, card.response, card.id, {file: changedFile, isPrompt: card.fileJSON.isPrompt});
+            updateCard(card.prompt, card.response, card.id, {file: changedFile, isPrompt: card.fileJSON.isPrompt}, card.userResponseType);
         } else {
             alert(validateFileResult);
             event.target.value = null;
             setFile(null);
             setFileIsPrompt(null);
-            updateCard(card.prompt, card.response, card.id, {file: null, isPrompt: null});
+            updateCard(card.prompt, card.response, card.id, {file: null, isPrompt: null}, card.userResponseType);
         }
     }
 
     function handleFileAssociationChange(event) {
         const isPrompt = event.target.value === "prompt"; // indicates whether the file will be associated with a prompt or a response
         setFileIsPrompt(isPrompt); //
-        updateCard(card.prompt, card.response, card.id, {file: card.fileJSON.file, isPrompt: isPrompt});
+        updateCard(card.prompt, card.response, card.id, {file: card.fileJSON.file, isPrompt: isPrompt}, card.userResponseType);
     }
 
     function handleResponseTypeChange(event) {
-        setResponseType(event.target.value);
-        console.log(responseType);
+        updateCard(card.prompt, card.response, card.id, card.fileJSON, event.target.value);
     }
 
     function handlePromptChange(event) {
-        updateCard(event.target.value, card.response, card.id, {file: file, isPrompt: fileIsPrompt})
+        updateCard(event.target.value, card.response, card.id, card.fileJSON, card.userResponseType);
     } 
 
     function handleResponseChange(event) {
-        updateCard(card.prompt, event.target.value, card.id, {file: file, isPrompt: fileIsPrompt})
-    }
+        updateCard(card.prompt, event.target.value, card.id, card.fileJSON, card.userResponseType);
+    } 
 
     let fileAssociationJSX = <>
-        <input type="radio" id="prompt" name="file-association" value="prompt" onChange={handleFileAssociationChange}/>
-        <label htmlFor="prompt">Prompt</label>
-        <input type="radio" id="response" name="file-association" value="response" onChange={handleFileAssociationChange}/>
-        <label htmlFor="response">Response</label>
+        <input type="radio" id={"file-for-prompt" + (card.id + 1)} name="file-association" value="prompt" onChange={handleFileAssociationChange}/>
+        <label htmlFor={"file-for-prompt" + (card.id + 1)}>Prompt</label>
+        <input type="radio" id={"file-for-response" + (card.id + 1)} name="file-association" value="response" onChange={handleFileAssociationChange}/>
+        <label htmlFor={"file-for-prompt" + (card.id + 1)}>Response</label>
         <br/>
     </>
 
     // this JSX is ultimately wrapped by <li> tags in an external method as react doesn't recognize keys properly if we return from inside this component
     // {"prompt" + (card.id + 1)} gives each input field a unique id so htmlFor can associate correctly
-    return <> 
+    return <form> 
         <label htmlFor={"prompt" + (card.id + 1)}>Prompt: </label> <input type="text" name="prompt" id={"prompt" + (card.id + 1)} value={card.prompt} 
             onChange={handlePromptChange}/>
         
@@ -80,7 +77,7 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
         
         <button className="delete-new-flaschard-button" onClick={() => removeCard(card.id)}>Del</button>
         <p>{fileIsPrompt === null ? "Null" : fileIsPrompt ? "Prompt" : "Response"}</p>
-    </>
+    </form>
 }
 
 // this function verifies that uploaded files are within size and type constraints

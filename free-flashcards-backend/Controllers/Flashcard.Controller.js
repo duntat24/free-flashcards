@@ -94,7 +94,7 @@ module.exports = {
             }
             const cardId = request.params.id;
             const fileValidationResult = validateFileInput(addedFile);
-            if (fileValidationResult.code !== 200) {
+            if (fileValidationResult.code !== 200) { // validateFileInput returns the correct server status code and message if an error occurs
                 next(createError(fileValidationResult.code, fileValidationResult.message));
                 return;
             }
