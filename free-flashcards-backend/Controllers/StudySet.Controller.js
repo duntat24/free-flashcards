@@ -110,7 +110,7 @@ module.exports = {
             let createdId = {_id: " "};
             // we are passing the createdId object by reference since returning values from the FlashcardController is difficult
             // we pass next so the helper function can do error handling itself
-            await FlashcardController.createNewFlashcard(flashcardBody.prompt, flashcardBody.response, createdId, next);
+            await FlashcardController.createNewFlashcard(flashcardBody.prompt, flashcardBody.response, flashcardBody.userResponseType, createdId, next);
 
             if (createdId._id !== " ") { // checking if an error occurred and the id field wasn't updated
                 studySet.cards.push(createdId._id); // adding the id to the sets' array of ids

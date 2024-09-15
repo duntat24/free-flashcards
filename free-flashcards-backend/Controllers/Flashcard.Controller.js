@@ -28,9 +28,9 @@ module.exports = {
         }
     },
 
-    createNewFlashcard : async (cardPrompt, cardResponse, createdId, next) => {
+    createNewFlashcard : async (cardPrompt, cardResponse, cardResponseType, createdId, next) => {
         try {
-            const card = new Flashcard({prompt: cardPrompt, response: cardResponse}); 
+            const card = new Flashcard({prompt: cardPrompt, response: cardResponse, userResponseType: cardResponseType}); 
             const result = await card.save();
             createdId._id = result._id;
         } catch (error) {
