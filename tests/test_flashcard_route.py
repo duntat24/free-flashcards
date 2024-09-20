@@ -17,7 +17,12 @@ class FlashcardRouteTests(unittest.TestCase):
     def setUp(self): # executed before every test, we're just using it to make sure the nonexistent and invalid id variables are initialized
         self.nonexistent_id = "66cfd27b38e5367fabb70f8d" # this is a valid format but doesn't match any flashcard db entries
         self.invalid_id = "invalid" # this is not a valid objectid format
-        self.wav_file_path = "./files/CantinaBand3.wav"
+        self.file_card_id = "66edb6a0debf1f33640321e6" # This is the objectid of the card we are going to modify by adding files to 
+        self.put_card_id = "66ecf15ffd9b0d57db2ad364" # This is the objectid of the card we modify with PUT requests
+
+        # Defining the file paths for files we may use multiple times so we only need to change them here if they change
+        self.wav_file_path = "./files/CantinaBand3.wav" 
+        self.jpg_file_path = "./files/jpeg-home.jpg"
 
     def test_get_card_not_exists(self):
         get_rest_call(self, f"http://localhost:3002/cards/{self.nonexistent_id}", expected_code=404)
@@ -52,13 +57,11 @@ class FlashcardRouteTests(unittest.TestCase):
                       request_parameters=updated_card_string, request_header=header, expected_code=400)
         
     def test_put_card_valid_id_and_body(self):
-        edited_objectid = "66ecf15ffd9b0d57db2ad364"
-
         updated_card_body = {"prompt": "seems I've been", "response": "edited", "userResponseType": "drawn"}
         updated_card_string = json.dumps(updated_card_body) # This converts the dictionary to a json in string format
         header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
 
-        put_response = put_rest_call(self, f"http://localhost:3002/cards/{edited_objectid}", 
+        put_response = put_rest_call(self, f"http://localhost:3002/cards/{self.put_card_id}", 
                       request_parameters=updated_card_string, request_header=header)
         
         # The prompt, response, and userResponse type should be identical
@@ -68,13 +71,11 @@ class FlashcardRouteTests(unittest.TestCase):
         self.assertEqual(updated_card_body["userResponseType"], put_response["userResponseType"])
 
     def test_put_card_no_promt(self):
-        edited_objectid = "66ecf15ffd9b0d57db2ad364"
-
         updated_card_body = {"response": "changed", "userResponseType": "drawn"}
         updated_card_string = json.dumps(updated_card_body) # This converts the dictionary to a json in string format
         header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
 
-        put_response = put_rest_call(self, f"http://localhost:3002/cards/{edited_objectid}", 
+        put_response = put_rest_call(self, f"http://localhost:3002/cards/{self.put_card_id}", 
                       request_parameters=updated_card_string, request_header=header)
         
         # The included fields in the PUT should be modified
@@ -82,13 +83,11 @@ class FlashcardRouteTests(unittest.TestCase):
         self.assertEqual(updated_card_body["userResponseType"], put_response["userResponseType"])
 
     def test_put_card_no_response(self):
-        edited_objectid = "66ecf15ffd9b0d57db2ad364"
-
         updated_card_body = {"prompt": "something has", "userResponseType": "drawn"}
         updated_card_string = json.dumps(updated_card_body) # This converts the dictionary to a json in string format
         header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
 
-        put_response = put_rest_call(self, f"http://localhost:3002/cards/{edited_objectid}", 
+        put_response = put_rest_call(self, f"http://localhost:3002/cards/{self.put_card_id}", 
                       request_parameters=updated_card_string, request_header=header)
         
         # The included fields in the PUT should be modified
@@ -96,13 +95,11 @@ class FlashcardRouteTests(unittest.TestCase):
         self.assertEqual(updated_card_body["userResponseType"], put_response["userResponseType"])
 
     def test_put_card_no_user_response_type(self):
-        edited_objectid = "66ecf15ffd9b0d57db2ad364"
-
         updated_card_body = {"prompt": "something has", "response": "changed"}
         updated_card_string = json.dumps(updated_card_body) # This converts the dictionary to a json in string format
         header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
 
-        put_response = put_rest_call(self, f"http://localhost:3002/cards/{edited_objectid}", 
+        put_response = put_rest_call(self, f"http://localhost:3002/cards/{self.put_card_id}", 
                       request_parameters=updated_card_string, request_header=header)
         
         # The included fields in the PUT should be modified
@@ -110,62 +107,62 @@ class FlashcardRouteTests(unittest.TestCase):
         self.assertEqual(updated_card_body["response"], put_response["response"])
     
     def test_put_card_invalid_user_response_type(self):
-        edited_objectid = "66ecf15ffd9b0d57db2ad364"
-
         updated_card_body = {"prompt": "seems I've been", "response": "edited", "userResponseType": "INVALID"}
         updated_card_string = json.dumps(updated_card_body) # This converts the dictionary to a json in string format
         header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
 
-        put_rest_call(self, f"http://localhost:3002/cards/{edited_objectid}", 
+        put_rest_call(self, f"http://localhost:3002/cards/{self.put_card_id}", 
                       request_parameters=updated_card_string, request_header=header, expected_code=400)
         
     def test_put_card_contains_file(self):
-        edited_objectid = "66ecf15ffd9b0d57db2ad364"
+        with open(self.wav_file_path, "rb") as attached_file: # rb lets us read the file in binary format
+            file = {"file": attached_file}
+            put_rest_call(self, f"http://localhost:3002/cards/{self.put_card_id}", attached_files=file, expected_code=422)
 
-        attached_file = open("./files/CantinaBand3.wav", "rb") # rb lets us read the file in binary format
-        file = {"file": attached_file}
-        put_rest_call(self, f"http://localhost:3002/cards/{edited_objectid}", attached_files=file, expected_code=422)
-
-        attached_file.close()
     
     def test_add_file_to_card_doesnt_exist(self):
-        attached_file = open("./files/CantinaBand3.wav", "rb") # rb lets us read the file in binary format
-        file = {"file": ("attachment", attached_file, "audio/wav")}
-        body = {"partOfPrompt": "true"} # we need to include this or the request format is invalid
+        with open(self.wav_file_path, "rb") as attached_file: # rb lets us read the file in binary format
+            file = {"file": ("attachment", attached_file, "audio/wav")}
+            body = {"partOfPrompt": "true"} # we need to include this or the request format is invalid
 
-        post_rest_call(self, f"http://localhost:3002/cards/{self.nonexistent_id}/file", 
+            post_rest_call(self, f"http://localhost:3002/cards/{self.nonexistent_id}/file", 
                              expected_code=404, attached_files=file, request_parameters=body)
-        # the assertion that the resource shouldn't be found (404 response) is done inside the get_rest_call method
-        attached_file.close()
+            # the assertion that the resource shouldn't be found (404 response) is done inside the get_rest_call method
 
     def test_add_file_to_card_invalid_id(self):
-        attached_file = open("./files/CantinaBand3.wav", "rb") # rb lets us read the file in binary format
-        file = {"file": ("attachment", attached_file, "audio/wav")}
-        body = {"partOfPrompt": "true"} # we need to include this or the request format is invalid
+        with open(self.wav_file_path, "rb") as attached_file: # rb lets us read the file in binary format
+            file = {"file": ("attachment", attached_file, "audio/wav")}
+            body = {"partOfPrompt": "true"} # we need to include this or the request format is invalid
 
-        post_rest_call(self, f"http://localhost:3002/cards/{self.invalid_id}/file", 
+            post_rest_call(self, f"http://localhost:3002/cards/{self.invalid_id}/file", 
                              expected_code=400, attached_files=file, request_parameters=body)
-        # the assertion that the provided id is invalid (400 response) is done inside the get_rest_call method
-
-        attached_file.close()
+            # the assertion that the provided id is invalid (400 response) is done inside the get_rest_call method
     
-    def test_add_file_to_card_wav(self):
-        added_id = "66edb6a0debf1f33640321e6"
-        
-        attached_file = open(self.wav_file_path, "rb") # rb lets us read the file in binary format
-        file = {"file": ("attachment", attached_file, "audio/wav")}
-        body = {"partOfPrompt": "true"} # we need to include this or the request format is invalid
+    def test_add_file_to_card_wav(self):        
+        with open(self.wav_file_path, "rb") as attached_file: # rb lets us read the file in binary format
+            file = {"file": ("attachment", attached_file, "audio/wav")}
+            body = {"partOfPrompt": "true"} # we need to include this or the request format is invalid
 
-        post_result = post_rest_call(self, f"http://localhost:3002/cards/{added_id}/file",
+            post_result = post_rest_call(self, f"http://localhost:3002/cards/{self.file_card_id}/file",
                               attached_files=file, request_parameters=body)
         
-        self.assertEqual(added_id, post_result["_id"])
+            self.assertEqual(self.file_card_id, post_result["_id"])
 
-        get_result = get_rest_call(self, f"http://localhost:3002/cards/{added_id}")
-        
-        compare_file_to_response(self, self.wav_file_path, get_result["file"]["data"]["data"])
-        attached_file.close()
+            get_result = get_rest_call(self, f"http://localhost:3002/cards/{self.file_card_id}")
+            compare_file_to_response(self, self.wav_file_path, get_result["file"]["data"]["data"])
     
+    def test_add_file_to_card_jpg(self):
+        with open(self.jpg_file_path, "rb") as attached_file:
+            file = {"file": ("attachment", attached_file, "audio/wav")}
+            body = {"partOfPrompt": "true"} # we need to include this or the request format is invalid
+
+            post_result = post_rest_call(self, f"http://localhost:3002/cards/{self.file_card_id}/file",
+                              attached_files=file, request_parameters=body)
+            
+            self.assertEqual(self.file_card_id, post_result["_id"])
+
+            get_result = get_rest_call(self, f"http://localhost:3002/cards/{self.file_card_id}")
+            compare_file_to_response(self, self.jpg_file_path, get_result["file"]["data"]["data"])
 
         #TODO: Add test cases for...
         #   POST: Test cases for adding a file to a card
