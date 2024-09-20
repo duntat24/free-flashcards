@@ -1,6 +1,8 @@
 import unittest
 from api_calls_helper import *
 import json
+import binascii
+import base64
 
 class FlashcardRouteTests(unittest.TestCase):
 
@@ -8,15 +10,17 @@ class FlashcardRouteTests(unittest.TestCase):
     This module tests functionality in the FlashcardController that is accessible through the API
     Note that POST and DELETE requests are accessed through the StudySet route because they require modifying the array of objectIDs in the set
     Before executing this file, launch the API with "npm test" in the free-flashcards-backend directory 
-        Note: using "npm start" will not work because the production environment uses a different port from the testing environment, but trying to put test data in the production db is questionable 
+        Note: using "npm start" will not work because the production environment uses a different port from the testing environment, but trying to put test data in the production db is questionable
+    There are several hard-coded object ids in this files. These should vary based on the values in your testing database.
     """
 
     def setUp(self): # executed before every test, we're just using it to make sure the nonexistent and invalid id variables are initialized
         self.nonexistent_id = "66cfd27b38e5367fabb70f8d" # this is a valid format but doesn't match any flashcard db entries
         self.invalid_id = "invalid" # this is not a valid objectid format
-    
+        self.wav_file_path = "./files/CantinaBand3.wav"
+
     def test_get_card_not_exists(self):
-        get_rest_call(self, f"http://localhost:3002/cards/{self.nonexistent_id}", expected_code = 404)
+        get_rest_call(self, f"http://localhost:3002/cards/{self.nonexistent_id}", expected_code=404)
         # the assertion that the resource shouldn't be found (404 response) is done inside the get_rest_call method
 
     def test_get_card_invalid_id(self):
@@ -115,7 +119,6 @@ class FlashcardRouteTests(unittest.TestCase):
         put_rest_call(self, f"http://localhost:3002/cards/{edited_objectid}", 
                       request_parameters=updated_card_string, request_header=header, expected_code=400)
         
-    
     def test_put_card_contains_file(self):
         edited_objectid = "66ecf15ffd9b0d57db2ad364"
 
@@ -124,6 +127,62 @@ class FlashcardRouteTests(unittest.TestCase):
         put_rest_call(self, f"http://localhost:3002/cards/{edited_objectid}", attached_files=file, expected_code=422)
 
         attached_file.close()
+    
+    def test_add_file_to_card_doesnt_exist(self):
+        attached_file = open("./files/CantinaBand3.wav", "rb") # rb lets us read the file in binary format
+        file = {"file": ("attachment", attached_file, "audio/wav")}
+        body = {"partOfPrompt": "true"} # we need to include this or the request format is invalid
+
+        post_rest_call(self, f"http://localhost:3002/cards/{self.nonexistent_id}/file", 
+                             expected_code=404, attached_files=file, request_parameters=body)
+        # the assertion that the resource shouldn't be found (404 response) is done inside the get_rest_call method
+        attached_file.close()
+
+    def test_add_file_to_card_invalid_id(self):
+        attached_file = open("./files/CantinaBand3.wav", "rb") # rb lets us read the file in binary format
+        file = {"file": ("attachment", attached_file, "audio/wav")}
+        body = {"partOfPrompt": "true"} # we need to include this or the request format is invalid
+
+        post_rest_call(self, f"http://localhost:3002/cards/{self.invalid_id}/file", 
+                             expected_code=400, attached_files=file, request_parameters=body)
+        # the assertion that the provided id is invalid (400 response) is done inside the get_rest_call method
+
+        attached_file.close()
+    
+    def test_add_file_to_card_wav(self):
+        added_id = "66edb6a0debf1f33640321e6"
+        
+        attached_file = open(self.wav_file_path, "rb") # rb lets us read the file in binary format
+        file = {"file": ("attachment", attached_file, "audio/wav")}
+        body = {"partOfPrompt": "true"} # we need to include this or the request format is invalid
+
+        post_result = post_rest_call(self, f"http://localhost:3002/cards/{added_id}/file",
+                              attached_files=file, request_parameters=body)
+        
+        self.assertEqual(added_id, post_result["_id"])
+
+        get_result = get_rest_call(self, f"http://localhost:3002/cards/{added_id}")
+        
+        compare_file_to_response(self, self.wav_file_path, get_result["file"]["data"]["data"])
+        attached_file.close()
+    
+
         #TODO: Add test cases for...
         #   POST: Test cases for adding a file to a card
         # ALSO: add special error messages if assert statements fail
+
+def compare_file_to_response(test, file_path, response_file_data, checked_bytes=500):
+    """
+    This method compares a locally stored file passed through the file_path with binary data contained in a response
+    Args:
+        test: a method in a TestCase class
+        file_path (str): the path to the file being compared
+        response_file_data (array): this is an array of binary data returned as part of a GET request to a DB entry that contains a file
+        checked_bytes (int): This defines how many bytes are compared. We don't want or need to compare the entire file
+    """
+    with open(file_path, "rb") as local_file:
+        file_base64_contents = binascii.b2a_base64(local_file.read())[:checked_bytes]
+        request_binary_string = bytes(response_file_data)
+        request_base64_string = base64.b64encode(request_binary_string)[:checked_bytes]
+        test.assertEqual(file_base64_contents, request_base64_string)
+

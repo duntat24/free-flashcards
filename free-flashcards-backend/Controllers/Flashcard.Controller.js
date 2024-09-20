@@ -90,27 +90,28 @@ module.exports = {
 
     addFileToCard : async (request, response, next) => {
         try {
-            if (request.files === null) {
+            if (request.files === null || request.files === undefined) {
                 next(createError(400, "No file attached"));
                 return;
             }
-            const addedFile = request.files.file;
-            const partOfPrompt = request.body.partOfPrompt;
-            if (partOfPrompt !== "false" && partOfPrompt !== "true") { // the file must be part of a prompt or response, otherwise request is invalid
-                next(createError(400, "File must be part of a prompt or response"));
-                return;
-            }
 
-            const cardId = request.params.id;
+            const addedFile = request.files.file;
             const fileValidationResult = validateFileInput(addedFile);
             if (fileValidationResult.code !== 200) { // validateFileInput returns the correct server status code and message if an error occurs
                 next(createError(fileValidationResult.code, fileValidationResult.message));
                 return;
             }
 
+            const partOfPrompt = request.body.partOfPrompt;
+            if (partOfPrompt !== "false" && partOfPrompt !== "true") { // the file must be part of a prompt or response, otherwise request is invalid
+                next(createError(400, "File must be part of a prompt or response"));
+                return;
+            }
+            
             const fileBinary = new binary(addedFile.data); // we need to get the binary from the file to convert it to an easily stored format
             const options = {new: true};           
             const file = {fileType: addedFile.mimetype, data: fileBinary, partOfPrompt: partOfPrompt};
+            const cardId = request.params.id;
             const result = await Flashcard.findByIdAndUpdate(cardId, {file: file}, options);
             if (result === null) { // the id we're updating with doesn't exist in the db
                 next(createError(404, "Flashcard does not exist"));
@@ -129,7 +130,6 @@ module.exports = {
     }
     
 }
-
 
 // this function verifies that uploaded files are within size and type constraints
 // it returns the entity to be returned to the client (status code and error message, if applicable)
