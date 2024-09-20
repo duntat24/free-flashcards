@@ -62,7 +62,7 @@ module.exports = {
 
     updateFlashcard : async (request, response, next) => {
         try {
-            const options = {new: true}; // results in newly updated flashcard being returned, if not included the replaced entry is reutrned
+            const options = {new: true, runValidators: true}; // we return the newly created flashcard body and also run our schema validation against the attempted update
             const updatedBody = request.body;
             const updatedCardId = request.params.id;
             const result = await Flashcard.findByIdAndUpdate(updatedCardId, updatedBody, options);
@@ -75,6 +75,9 @@ module.exports = {
             console.log(error);
             if (error instanceof mongoose.CastError) { // triggers if provided objectid is not formatted correctly
                 next(createError(400, "invalid flashcard id"));
+            }
+            if (error instanceof mongoose.Error.ValidationError) { // triggers if the updated body violates our schema - for now just if the provided userResponseType isn't supported
+                next(createError(400, "invalid request body"));
             }
             next(error);
         }
