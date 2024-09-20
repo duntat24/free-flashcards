@@ -65,6 +65,11 @@ module.exports = {
             const options = {new: true, runValidators: true}; // we return the newly created flashcard body and also run our schema validation against the attempted update
             const updatedBody = request.body;
             const updatedCardId = request.params.id;
+
+            if (request.files !== undefined) {
+                next(createError(422, "Files should be added through the cards/:id/file POST route"));
+            }
+
             const result = await Flashcard.findByIdAndUpdate(updatedCardId, updatedBody, options);
             if (result === null) {
                 next(createError(404, "Flashcard does not exist")); // valid id format but no matching db entry
@@ -141,11 +146,11 @@ function validateFileInput(file) {
     }
     const fileMimetypeArray = file.mimetype.split("/"); // separates keywords in the file's description, e.g. [image, jpeg]
     if (fileMimetypeArray[0] !== "image" && fileMimetypeArray[0] !== "audio") {
-        response.code = 400
+        response.code = 415
         response.message = "Attached files must be image or audio files and cannot be PDFs";
     }
     if (fileMimetypeArray[1] === "tiff" || fileMimetypeArray[1] === "tiff-fx") {
-        response.code = 400
+        response.code = 415
         response.message = "Attached files cannot be in the following formats: tiff";
     }
 

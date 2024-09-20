@@ -115,8 +115,15 @@ class FlashcardRouteTests(unittest.TestCase):
         put_rest_call(self, f"http://localhost:3002/cards/{edited_objectid}", 
                       request_parameters=updated_card_string, request_header=header, expected_code=400)
         
-        
+    
+    def test_put_card_contains_file(self):
+        edited_objectid = "66ecf15ffd9b0d57db2ad364"
+
+        attached_file = open("./files/CantinaBand3.wav", "rb") # rb lets us read the file in binary format
+        file = {"file": attached_file}
+        put_rest_call(self, f"http://localhost:3002/cards/{edited_objectid}", attached_files=file, expected_code=422)
+
+        attached_file.close()
         #TODO: Add test cases for...
-        #   PUT: Verify that a PUT request to a card containing a file works correctly and that trying to include a file in a PUT doesn't apply
         #   POST: Test cases for adding a file to a card
         # ALSO: add special error messages if assert statements fail

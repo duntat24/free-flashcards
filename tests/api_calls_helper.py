@@ -15,8 +15,8 @@ def get_rest_call(test, url, request_parameters = {}, request_header = {}, expec
     return response.json()
 
 # For API calls using POST, request parameters and header are default to 'empty'
-def post_rest_call(test, url, request_parameters = {}, request_header = {}, expected_code = 200):
-    response = requests.post(url, request_parameters, headers = request_header)
+def post_rest_call(test, url, request_parameters = {}, request_header = {}, attached_files = {}, expected_code = 200):
+    response = requests.post(url, request_parameters, headers = request_header, files = attached_files)
 
      # this assertEqual relies on the calling test method passing itself to this method
     test.assertEqual(expected_code, response.status_code,
@@ -24,8 +24,8 @@ def post_rest_call(test, url, request_parameters = {}, request_header = {}, expe
     return response.json()
 
 # For API calls using PUT, request parameters and header default to 'empty'
-def put_rest_call(test, url, request_parameters = {}, request_header = {}, expected_code = 200):
-    response = requests.put(url, request_parameters, headers = request_header)
+def put_rest_call(test, url, request_parameters = {}, request_header = {}, attached_files = {}, expected_code = 200):
+    response = requests.put(url, request_parameters, headers = request_header, files = attached_files)
 
      # this assertEqual relies on the calling test method passing itself to this method
     test.assertEqual(expected_code, response.status_code,
@@ -40,3 +40,4 @@ def delete_rest_call(test, url, request_header = {}, expected_code = 200):
     test.assertEqual(expected_code, response.status_code,
                      f"Response code to {url} DELETE was {response.status_code} instead of {expected_code}")
     return response.json()
+
