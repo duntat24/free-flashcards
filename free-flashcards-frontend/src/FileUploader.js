@@ -38,7 +38,8 @@ export default function FileUploader() {
             alert("Attached file is too large. Files must be less than 0.5 MB");
             return;
         }
-        const url = "http://localhost:3001/cards/66cfd27b38e5367fabb70f8f/file" // this is ONLY FOR TESTING and should be modifiable
+        //const url = "http://localhost:3001/cards/66cfd27b38e5367fabb70f8f/file"; // this is ONLY FOR TESTING and should be modifiable
+        const url = "http://localhost:3002/cards/66edb6a0debf1f33640321e6/file";
         const formData = new FormData();
         formData.append("file", file); 
         formData.append("partOfPrompt", false) // indicates whether the uploaded file is part of a prompt or not
@@ -58,7 +59,8 @@ export default function FileUploader() {
 
     function handleDownloadSubmit(event) {
         event.preventDefault(); // prevents page refresh 
-        const url = "http://localhost:3001/cards/66cfd27b38e5367fabb70f8f"
+        // const url = "http://localhost:3001/cards/66cfd27b38e5367fabb70f8f";
+        const url = "http://localhost:3002/cards/66edb6a0debf1f33640321e6";
         axios.get(url).then((response) => {
             const fileBase64String = arrayBufferToBase64(response.data.file.data.data);
             setFileString(fileBase64String);
