@@ -4,7 +4,8 @@
   "description": "free-flashcards application api",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "nodemon app.js production",
+    "test": "nodemon app.js test"
   },
   "author": "",
   "license": "ISC",

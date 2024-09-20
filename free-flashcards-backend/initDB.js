@@ -1,8 +1,14 @@
 const mongoose = require("mongoose");
 
-module.exports = () => {
+module.exports = (launchMode) => {
+    let connectionURI;
+    if (launchMode === "production") {
+        connectionURI = process.env.mongodbProductionURI;
+    } else if (launchMode === "test") {
+        connectionURI = process.env.mongodbTestURI;
+    }
     // connecting to a local instance of MongoDB contained in the URI in the .env file
-    mongoose.connect(process.env.mongodbURI).then(() => {
+    mongoose.connect(connectionURI).then(() => {
         console.log("connected to mongodb!")
     }).catch(error => console.log(error.message)); 
 

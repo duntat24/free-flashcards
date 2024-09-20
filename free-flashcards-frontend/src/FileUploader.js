@@ -61,7 +61,6 @@ export default function FileUploader() {
         const url = "http://localhost:3001/cards/66cfd27b38e5367fabb70f8f"
         axios.get(url).then((response) => {
             const fileBase64String = arrayBufferToBase64(response.data.file.data.data);
-            console.log(response.data.file.partOfPrompt); // the request body must indicate whether the attached file is part of the prompt
             setFileString(fileBase64String);
             setFileMimetype(response.data.file.fileType);
         }).catch((error) => {

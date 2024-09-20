@@ -14,8 +14,9 @@ app.use(cors({origin: 'http://localhost:3000'}));
 
 app.use(fileUpload());
 
-// initializeDB
-require("./initDB")(); // running the arrow function in initDB
+const launchArgs = process.argv; // 3rd argument will be 'production' or 'test', indicating which port we should launch on and which collection we should connect to
+
+require("./initDB")(launchArgs[2]); // running the arrow function in initDB to initialize the db
 
 const FlashcardRoute = require("./Routes/Flashcard.route");
 const StudySetRoute = require("./Routes/StudySet.route");
@@ -49,7 +50,13 @@ app.use((error, request, response, next) => {
     })
 });
 
-const PORT = process.env.port || 3000; // if the provided .env file has no port then we default to 3000
+let envPort;
+if (launchArgs[2] === "production") {
+    envPort = process.env.PRODUCTION_PORT;
+} else if (launchArgs[2] === "test") {
+    envPort = process.env.TEST_PORT;
+}
+const PORT = envPort || 3000; // if the provided .env file has no port then we default to 3000
 app.listen(PORT, () => {
     console.log("Server started on port " + PORT);
 });

@@ -15,8 +15,6 @@ const FlashcardSchema = new Schema({
         required: true, 
         enum: ['drawn', 'text', 'recorded'] // we currently only support 3 response types
     }, 
-    // TODO: try to make it so if a file exists, the fileType, data, and partOfPrompt fields must be part of it
-        // WITHOUT manual javascript checks - let mongoose cast it for us
     file: { // note that a file is not required - cards are permitted to only have a text prompt & response
         fileType: { // we need to know how to construct the file data based on its format
             type: String
@@ -29,8 +27,6 @@ const FlashcardSchema = new Schema({
         } 
     }
 });
-
-// TODO: need types of responses such as audio or drawn responses (images)
 
 const Flashcard = mongoose.model('flashcard', FlashcardSchema);
 module.exports = Flashcard;
