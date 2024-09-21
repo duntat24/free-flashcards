@@ -9,7 +9,7 @@ class StudySetRouteTests(unittest.TestCase):
         self.id_invalid = "invalid" # This is not a valid format for an object id
 
         self.tested_set_id = "66ecea881120acdb2fca8ef3" # id for the set we modify & access, but we do not delete this
-        self.unmodified_set_id = "66eef6f0933048fdcc0cd2d5" # This set is not modified and exists to verify that getting all study sets successfully returns multiple sets
+        self.unmodified_set_id = "66ef2fcda9385af3ff0545bf" # This set is not modified and exists to verify that getting all study sets successfully returns multiple sets
 
     def test_study_set_get_all(self):
         # This method tests getting all the study sets in the test DB since the system is currently only designed for 1 user
@@ -170,6 +170,43 @@ class StudySetRouteTests(unittest.TestCase):
 
         put_rest_call(self, f"http://localhost:3002/sets/{self.id_invalid}", request_parameters=updated_set_string, 
                       request_header=header, expected_code=400)
+
+    def test_update_study_set_no_title(self):
+        # This method tests attempting to update a study set without providing a title field
+        updated_set_title = {"notATitle": "nooo"}
+        updated_set_string = json.dumps(updated_set_title) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        put_response = put_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}", request_parameters=updated_set_string, 
+                                        request_header=header, expected_code=400)
+        expected_set_no_title_message = "Sets must have a title" # a nonexistent title field produces a different status message than an only whitespace title field
+        self.assertEqual(expected_set_no_title_message, put_response["error"]["message"], 
+                         f"Expected 400 error message of '{expected_set_no_title_message}' but instead got '{put_response["error"]["message"]}'")
+
+    def test_update_study_set_blank_title(self):
+        # This method tests attempting to update a study set's title while providing an empty string in the title field
+
+        updated_set_title = {"title": ""}
+        updated_set_string = json.dumps(updated_set_title) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        put_response = put_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}", request_parameters=updated_set_string, 
+                                        request_header=header, expected_code=400)
+        expected_set_no_title_message = "Set title must contain non-whitespace characters" # a nonexistent title field produces a different status message than an only whitespace title field
+        self.assertEqual(expected_set_no_title_message, put_response["error"]["message"], 
+                         f"Expected 400 error message of '{expected_set_no_title_message}' but instead got '{put_response["error"]["message"]}'")
+
+    def test_update_study_set_whitespace_title(self):
+        # This method tests attempting to update a study set's title while providing a string composed only of whitespace characters in the title field
+        updated_set_title = {"title": ""}
+        updated_set_string = json.dumps(updated_set_title) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        put_response = put_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}", request_parameters=updated_set_string, 
+                                        request_header=header, expected_code=400)
+        expected_set_no_title_message = "Set title must contain non-whitespace characters" # a nonexistent title field produces a different status message than an only whitespace title field
+        self.assertEqual(expected_set_no_title_message, put_response["error"]["message"], 
+                         f"Expected 400 error message of '{expected_set_no_title_message}' but instead got '{put_response["error"]["message"]}'")
 
     def test_update_study_set_exists(self):
         # This method tests attempting to update the title of a study set that exists in the db

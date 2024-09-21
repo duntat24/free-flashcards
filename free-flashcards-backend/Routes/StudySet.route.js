@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const StudySetController = require("../Controllers/StudySet.Controller");
+const StudySet = require("../Models/StudySet.model");
 
 // handles requests on the route <root>/sets
 
@@ -19,5 +20,7 @@ router.put('/:id', StudySetController.updateStudySetTitle); // updates the title
 router.post('/:id', StudySetController.addCardToSet); // adds a flashcard to the study set with the specified id
 
 router.delete('/:set_id/:card_id', StudySetController.deleteCardFromSet); // deletes the specified card from the set
+
+router.post('/:id/quiz', StudySetController.addQuizScore); // add a new quiz score to the specified study set
 
 module.exports = router;

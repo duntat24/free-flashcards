@@ -28,7 +28,7 @@ module.exports = {
                 next(createError(400, "Set title must contain non-whitespace characters"));
                 return;
             }
-            const set = new StudySet({"title": request.body.title, "cards": []}); // raises a 400 error if no title is included
+            const set = new StudySet({"title": request.body.title}); // raises a 400 error if no title is included
             const result = await set.save();
             response.send(result);
         } catch (error) {
@@ -89,8 +89,16 @@ module.exports = {
         try {
             const options = {new: true}; // we return the newly modified set title
             const updatedId = request.params.id;
-            const updatedBody = request.body; // this method only needs the title from the body
-            const result = await StudySet.findByIdAndUpdate(updatedId, {title: updatedBody.title}, options);
+            const title = request.body.title;
+            if (title === undefined || title === null) { // we make this check here instead of in schema validation because we also need to ensure that the title doesn't contain only whitespace
+                next(createError(400, "Sets must have a title"));
+                return;
+            }
+            if (title.trim() === "") { // checking if the title contains only whitespace characters
+                next(createError(400, "Set title must contain non-whitespace characters"));
+                return;
+            }
+            const result = await StudySet.findByIdAndUpdate(updatedId, {title: title}, options);
             if (result === null) { // no set was found matching the provided id
                 next(createError(404, "Study set does not exist")); 
             } else {
@@ -158,4 +166,14 @@ module.exports = {
             next(error);
         }
     },
+
+    addQuizScore : async (request, response, next) => {
+        try {
+
+        } catch (error) {
+            console.log(error.message);
+
+            next(error);
+        }
+    }
 }

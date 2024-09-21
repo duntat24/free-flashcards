@@ -6,7 +6,14 @@ const StudySetSchema = new Schema({
         type: String,
         required: true
     }, 
-    cards: [Schema.Types.ObjectId]
+    cards: {
+        type: [Schema.Types.ObjectId],
+        required: true
+    },
+    quizScores: {
+        type: [Number],
+        required: true
+    }
 });
 
 
