@@ -19,14 +19,20 @@ module.exports = {
 
     createStudySet : async (request, response, next) => { // add a study set to the database
         try {
+            const title = request.body.title;
+            if (title === undefined || title === null) { // we make this check here instead of in schema validation because we also need to ensure that the title doesn't contain only whitespace
+                next(createError(400, "Sets must have a title"));
+                return;
+            }
+            if (title.trim() === "") { // checking if the title contains only whitespace characters
+                next(createError(400, "Set title must contain non-whitespace characters"));
+                return;
+            }
             const set = new StudySet({"title": request.body.title, "cards": []}); // raises a 400 error if no title is included
             const result = await set.save();
             response.send(result);
         } catch (error) {
             console.log(error.message);
-            if (error.name === "ValidationError") { // request body is not valid e.g. does not contain a title for the set
-                next(createError(400, error.message)) 
-            }
             next(error);
         }
     },

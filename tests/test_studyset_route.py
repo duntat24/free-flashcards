@@ -23,7 +23,7 @@ class StudySetRouteTests(unittest.TestCase):
                 contains_unmodified_set = True
         self.assertTrue(contains_tested_set, "The response did not contain the id of the study set being modified by tests")
         self.assertTrue(contains_unmodified_set, "The response did not contain the id of the study set not being modified by tests")
-
+    '''
     def test_create_study_set(self):
         # This method tests that we can create a study set by providing the title of the newly created set
 
@@ -35,11 +35,31 @@ class StudySetRouteTests(unittest.TestCase):
                                        request_header=header)
         self.assertEqual(created_set_body["title"], post_response["title"], 
                          f"Expected created set to have title '{created_set_body["title"]}' but instead got title '{post_response["title"]}'")
-
+        
+        # TODO: This method should delete the study set it creates to avoid bloating the test db
+    '''
     def test_create_study_set_no_title(self):
-        # This method tests attempting to create a study set with no title. Sets must have a title to be displayed to users
+        # This method tests attempting to create a study set with no title field in the request. Sets must have a title to be displayed to users
 
-        created_set_body = {"notATitlte": "no"}
+        created_set_body = {"notATitle": "no"}
+        created_set_string = json.dumps(created_set_body) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+        
+        post_rest_call(self, "http://localhost:3002/sets", request_parameters=created_set_string, request_header=header, expected_code=400)
+
+    def test_create_study_set_empty_title(self):
+        # This method tests attempting to create a study set with a title field of an empty string in the request
+
+        created_set_body = {"title": ""}
+        created_set_string = json.dumps(created_set_body) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+        
+        post_rest_call(self, "http://localhost:3002/sets", request_parameters=created_set_string, request_header=header, expected_code=400)
+
+    def test_create_study_set_whitespace_title(self):
+        # This method tests attempting to create a study set with a title field that contains only whitespace characters
+
+        created_set_body = {"title": " \t\n "}
         created_set_string = json.dumps(created_set_body) # This converts the dictionary to a json in string format
         header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
         
