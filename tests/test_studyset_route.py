@@ -315,6 +315,162 @@ class StudySetRouteTests(unittest.TestCase):
         set_card_ids = get_set_result["cards"]
         self.assertFalse(added_card_id in set_card_ids) 
 
+    def test_add_set_quiz_score_doesnt_exist(self):
+        # This method tests adding a quiz score to a study set with an id that doesn't exist in the db
+        # This should produce a different error code than using an invalidly formatted id
+
+        added_score_body = {"addedQuizScore": "0.5"}
+        added_score_string = json.dumps(added_score_body) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_response = post_rest_call(self, f"http://localhost:3002/sets/{self.id_doesnt_exist}/quiz", 
+                                       request_parameters=added_score_string, request_header=header, expected_code=404)
+        expected_set_post_404_message = "Study Set does not exist" # We need to ensure the 404 is caused by the targeted resource not existing in the db and not targeting an API route that doesn't exist
+        self.assertEqual(expected_set_post_404_message, post_response["error"]["message"],
+                         f"Expected 404 status message of '{expected_set_post_404_message}' but instead got '{post_response["error"]["message"]}'")
+
+    def test_add_set_quiz_score_invalid_id(self):
+        # This method tests adding a quiz score to a study set with an invalidly formatted id
+        # This should produce a different error code than using an id that doesn't exist in the db
+
+        added_score_body = {"addedQuizScore": "0.5"}
+        added_score_string = json.dumps(added_score_body) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_response = post_rest_call(self, f"http://localhost:3002/sets/{self.id_invalid}/quiz", 
+                                       request_parameters=added_score_string, request_header=header, expected_code=400)
+        expected_set_post_400_message = "invalid study set id" # We need to ensure the 400 is caused by an invalidly formatted object id, not the other possible causes of a 400 for this route
+        self.assertEqual(expected_set_post_400_message, post_response["error"]["message"],
+                         f"Expected 400 status message of '{expected_set_post_400_message}' but instead got '{post_response["error"]["message"]}'")
+
+    def test_add_set_quiz_score_no_score(self):
+        # This method tests attempting to add a quiz score without including the added quiz score in the request
+
+        added_score_body = {"notAQuizScore": "0.5"}
+        added_score_string = json.dumps(added_score_body) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_response = post_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}/quiz", 
+                                       request_parameters=added_score_string, request_header=header, expected_code=400)
+        expected_set_post_400_message = "No quiz score provided" # We need to ensure the 400 is caused by no quiz score being included, not the other possible causes of a 400 for this route
+        self.assertEqual(expected_set_post_400_message, post_response["error"]["message"],
+                         f"Expected 400 status message of '{expected_set_post_400_message}' but instead got '{post_response["error"]["message"]}'")
+
+    def test_add_set_quiz_score_not_a_number_string(self):
+        # This method tests attempting to add a quiz score and including sending a string that isn't a number
+
+        added_score_body = {"addedQuizScore": "abc"}
+        added_score_string = json.dumps(added_score_body) # This converts the dictionary to a json in string format 
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_response = post_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}/quiz", 
+                                       request_parameters=added_score_string, request_header=header, expected_code=400)
+        expected_set_post_400_message = "Provided quiz score is not a number" # We need to ensure the 400 is caused by the provided quiz score not being a valid number
+        self.assertEqual(expected_set_post_400_message, post_response["error"]["message"],
+                         f"Expected 400 status message of '{expected_set_post_400_message}' but instead got '{post_response["error"]["message"]}'")
+
+    def test_add_set_quiz_score_mixed_numbers_and_letters_string(self):
+        # This method tests attempting to add a quiz score and including sending a string that isn't a number
+
+        added_score_body = {"addedQuizScore": "abc123"}
+        added_score_string = json.dumps(added_score_body) # This converts the dictionary to a json in string format 
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_response = post_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}/quiz", 
+                                       request_parameters=added_score_string, request_header=header, expected_code=400)
+        expected_set_post_400_message = "Provided quiz score is not a number" # We need to ensure the 400 is caused by the provided quiz score not being a valid number
+        self.assertEqual(expected_set_post_400_message, post_response["error"]["message"],
+                         f"Expected 400 status message of '{expected_set_post_400_message}' but instead got '{post_response["error"]["message"]}'")
+        
+    def test_add_set_quiz_score_whitespace_string(self):
+        # This method tests attempting to add a quiz score and including sending a string that isn't a number
+
+        added_score_body = {"addedQuizScore": " \t\n "}
+        added_score_string = json.dumps(added_score_body) # This converts the dictionary to a json in string format 
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_response = post_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}/quiz", 
+                                       request_parameters=added_score_string, request_header=header, expected_code=400)
+        expected_set_post_400_message = "Provided quiz score is not a number" # We need to ensure the 400 is caused by the provided quiz score not being a valid number
+        self.assertEqual(expected_set_post_400_message, post_response["error"]["message"],
+                         f"Expected 400 status message of '{expected_set_post_400_message}' but instead got '{post_response["error"]["message"]}'")
+    
+    def test_add_quiz_score_too_high(self):
+        # This method tests attempting to add a quiz score higher than the accepted range [0, 1]
+
+        added_score_body = {"addedQuizScore": "1.5"}
+        added_score_string = json.dumps(added_score_body) # This converts the dictionary to a json in string format 
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_response = post_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}/quiz", 
+                                       request_parameters=added_score_string, request_header=header, expected_code=422)
+        expected_set_post_422_message = "Provided quiz score must be the fraction of correct answers and must be between 0 and 1" # We need to ensure the 422 is caused by the number not being within the accepted range
+        self.assertEqual(expected_set_post_422_message, post_response["error"]["message"],
+                         f"Expected 422 status message of '{expected_set_post_422_message}' but instead got '{post_response["error"]["message"]}'")
+        
+    def test_add_quiz_score_too_low(self):
+        # This method tests attempting to add a quiz score lower than the accepted range [0, 1]
+
+        added_score_body = {"addedQuizScore": "-0.5"}
+        added_score_string = json.dumps(added_score_body) # This converts the dictionary to a json in string format 
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_response = post_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}/quiz", 
+                                       request_parameters=added_score_string, request_header=header, expected_code=422)
+        expected_set_post_422_message = "Provided quiz score must be the fraction of correct answers and must be between 0 and 1" # We need to ensure the 422 is caused by the number not being within the accepted range
+        self.assertEqual(expected_set_post_422_message, post_response["error"]["message"],
+                         f"Expected 422 status message of '{expected_set_post_422_message}' but instead got '{post_response["error"]["message"]}'")
+
+    def test_add_set_quiz_score_integer(self):
+        # This method tests attempting to add a quiz score with an integer, which should be accepted
+
+        # We want to get the initial state of the set to ensure that a value was actually added to the array
+        get_response = get_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}")
+
+        added_score_body = {"addedQuizScore": "1"}
+        added_score_string = json.dumps(added_score_body) # This converts the dictionary to a json in string format 
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_response = post_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}/quiz", 
+                                       request_parameters=added_score_string, request_header=header)
+        # We can't delete quiz scores from the db, so we need to get the quiz score we added from where it should be in the array (at the end) since we can't guarantee a precise index where it'll be
+            # users shouldn't be able to erase their quiz history whether deliberately or accidentally
+        
+        # Verifying that exactly one quiz score was added to the array
+        resulting_scores = post_response["quizScores"]
+        initial_scores = get_response["quizScores"]
+        self.assertEqual(len(initial_scores) + 1, len(resulting_scores),
+                         f"Expected resulting number of quiz scores to be {len(initial_scores) + 1} but instead got {len(resulting_scores)}")
+
+        # Verifying that our quiz score was added to the end of the array, we need to cast to float because python automatically turns the response from the client into a number
+        self.assertEqual(float(added_score_body["addedQuizScore"]), resulting_scores[len(resulting_scores) - 1],
+                         f"Expected added quiz score to be {added_score_body["addedQuizScore"]} but instead got {resulting_scores[len(resulting_scores) - 1]}")
+        
+    def test_add_set_quiz_score_float(self):
+        # This method tests attempting to add a quiz score with a float, which should be accepted
+
+        # We want to get the initial state of the set to ensure that a value was actually added to the array
+        get_response = get_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}")
+
+        added_score_body = {"addedQuizScore": "0.5"}
+        added_score_string = json.dumps(added_score_body) # This converts the dictionary to a json in string format 
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_response = post_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}/quiz", 
+                                       request_parameters=added_score_string, request_header=header)
+        # We can't delete quiz scores from the db, so we need to get the quiz score we added from where it should be in the array (at the end) since we can't guarantee a precise index where it'll be
+            # users shouldn't be able to erase their quiz history whether deliberately or accidentally
+        
+        # Verifying that exactly one quiz score was added to the array
+        resulting_scores = post_response["quizScores"]
+        initial_scores = get_response["quizScores"]
+        self.assertEqual(len(initial_scores) + 1, len(resulting_scores),
+                         f"Expected resulting number of quiz scores to be {len(initial_scores) + 1} but instead got {len(resulting_scores)}")
+
+        # Verifying that our quiz score was added to the end of the array, we need to cast to a float because python automatically turns the response from the client into a number
+        self.assertEqual(float(added_score_body["addedQuizScore"]), resulting_scores[len(resulting_scores) - 1],
+                         f"Expected added quiz score to be {added_score_body["addedQuizScore"]} but instead got {resulting_scores[len(resulting_scores) - 1]}")
+
     # TODO: we need to add functionality for an array of quiz scores (floats) that the user can add & remove from
     
     # TODO (for test_flashcard_route.py): Need to verify that 404 messages are for the targeted resource and not caused by attempting to hit a route that doesn't exist

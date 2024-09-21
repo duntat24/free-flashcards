@@ -169,10 +169,35 @@ module.exports = {
 
     addQuizScore : async (request, response, next) => {
         try {
-
+            const targetedSetId = request.params.id;
+            const studySet = await StudySet.findById(targetedSetId);
+            if (studySet === null) { // the provided id doesn't match any study set in the db
+                next(createError(404, "Study Set does not exist"));
+                return;
+            }
+            let addedQuizScore = request.body.addedQuizScore;
+            if (addedQuizScore === undefined || addedQuizScore === null) { // verifying that the request body actually contains a quiz score to add
+                next(createError(400, "No quiz score provided"));
+                return;
+            }
+            addedQuizScore = parseFloat(addedQuizScore);
+            if (isNaN(addedQuizScore)) { // verifying that the sent quiz score is a number
+                next(createError(400, "Provided quiz score is not a number"));
+                return;
+            }   
+            if (addedQuizScore < 0 || addedQuizScore > 1) { // the quiz score must be a float between 0 and 1 indicating the fraction of correct answers
+                next(createError(422, "Provided quiz score must be the fraction of correct answers and must be between 0 and 1"));
+                return;
+            }
+            // if we get here then the quiz score is valid and can be added to the study set
+            studySet.quizScores.push(addedQuizScore); 
+            const result = await studySet.save();
+            response.send(result);
         } catch (error) {
             console.log(error.message);
-
+            if (error instanceof mongoose.CastError) { // triggers if provided objectid doesn't have a valid format
+                next(createError(400, "invalid study set id"));
+            }
             next(error);
         }
     }

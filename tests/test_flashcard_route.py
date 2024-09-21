@@ -391,4 +391,3 @@ def compare_file_to_response(test, file_path, response_file_data, checked_bytes=
         request_binary_string = bytes(response_file_data)
         request_base64_string = base64.b64encode(request_binary_string)[:checked_bytes]
         test.assertEqual(file_base64_contents, request_base64_string, "The file contents of the received file do not match the locally stored copy of this file")
-
