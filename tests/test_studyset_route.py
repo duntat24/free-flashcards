@@ -470,8 +470,6 @@ class StudySetRouteTests(unittest.TestCase):
         # Verifying that our quiz score was added to the end of the array, we need to cast to a float because python automatically turns the response from the client into a number
         self.assertEqual(float(added_score_body["addedQuizScore"]), resulting_scores[len(resulting_scores) - 1],
                          f"Expected added quiz score to be {added_score_body["addedQuizScore"]} but instead got {resulting_scores[len(resulting_scores) - 1]}")
-
-    # TODO: we need to add functionality for an array of quiz scores (floats) that the user can add & remove from
     
     # TODO (for test_flashcard_route.py): Need to verify that 404 messages are for the targeted resource and not caused by attempting to hit a route that doesn't exist
         # Also need to update the comment for the 'header' - mentions a 'user string', not sure where this typo came from
