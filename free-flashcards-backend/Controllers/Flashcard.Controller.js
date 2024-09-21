@@ -127,6 +127,35 @@ module.exports = {
             }
             next(error);
         }
+    },
+
+    deleteFileFromCard : async (request, response, next) => { // this deletes any file attached to the specified flashcard and sends it in the response
+        try {
+            const searchedId = request.params.id; // getting the id in the route parameter
+            const result = await Flashcard.findById(searchedId);      
+            if (result === null) {
+                next(createError(404, "Flashcard does not exist"));
+            } else {
+                let existingFile = result.file;
+                
+                // the mongoose return if the file doesn't exist is strange - it returns an object that displays as {}
+                // but when checking its keys, it still has all the keys of a file object, they are just all undefined
+                // so, we check if the document contains a file by checking if one of those fields is undefined, since none of those fields should be undefined when the object is initialized
+                if (existingFile.partOfPrompt === undefined) { 
+                    next(createError(422, "Card indicated for file removal has no file"));
+                }
+                response.send(existingFile);
+                // deleting the file from the flashcard. If we do this before sending the response then the existingFile variable is overwritten
+                result.file = undefined; 
+                result.save();
+            }
+        } catch (error) {
+            console.log(error.message);
+            if (error instanceof mongoose.CastError) { // objectid is not formatted correctly
+                next(createError(400, "invalid flashcard id"));
+            }
+            next(error);
+        }
     }
     
 }

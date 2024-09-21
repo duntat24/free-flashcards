@@ -58,7 +58,7 @@ class FlashcardRouteTests(unittest.TestCase):
                          f"Expected response 'Can you hear me' but instead got '{get_result["response"]}'")
         self.assertEqual("text", get_result["userResponseType"], 
                          f"Expected user response type of 'text' but instead got '{get_result["userResponseType"]}'")
-
+    
     def test_put_card_not_exists(self):
         # This method tests attempting to make a PUT request with an id not present in the db    
         # This should give a different response code than an invalidly formatted id 
@@ -336,10 +336,46 @@ class FlashcardRouteTests(unittest.TestCase):
 
             post_rest_call(self, f"http://localhost:3002/cards/{self.file_card_id}/file",
                               attached_files=file, expected_code=400)
+    
+    def test_delete_file_from_card_doesnt_exist(self):
+        # This method tests attempting to delete a file from a card with an id that doesn't exist in the db
+        # This should give a different response code than an invalidly formatted id
 
- #TODO: Add test cases for...
-        # ALSO: add special error messages if assert statements fail
-        # Add comments indicating reason for test case e.g. what users cannot do
+        delete_rest_call(self, f"http://localhost:3002/cards/{self.nonexistent_id}/file", expected_code=404)
+        # the assertion that the resource shouldn't be found (404 response) is done inside the get_rest_call method
+
+    def test_delete_file_from_card_invalid_id(self):
+        # This method tests attempting to delete a file from a card with an id that is incorrectly formatted. 
+        # This should give a different response code than a validly formatted id that doesn't exist
+
+        delete_rest_call(self, f"http://localhost:3002/cards/{self.invalid_id}/file", expected_code=400)
+        # the assertion that the provided id is invalid (400 response) is done inside the get_rest_call method
+    
+    def test_delete_file_from_card_exists(self):
+        # This method tests attempting to delete a file from a card with an id that exists in the db
+        # It first sends a file to the flashcard that will have a file deleted from it to ensure that there will be something to delete
+        
+        with open(self.svg_file_path, "rb") as attached_file:
+            file = {"file": ("attachment", attached_file, "image/svg")}
+            body = {"partOfPrompt": "true"} # we need to include this or the request format is invalid
+        
+            post_rest_call(self, f"http://localhost:3002/cards/{self.file_card_id}/file",
+                              attached_files=file, request_parameters=body)
+
+        delete_response = delete_rest_call(self, f"http://localhost:3002/cards/{self.file_card_id}/file")
+
+        get_response = get_rest_call(self, f"http://localhost:3002/cards/{self.file_card_id}")
+        with self.assertRaises(KeyError): # a file field should not exist in the get responses
+            get_response["file"]
+
+        compare_file_to_response(self, self.svg_file_path, delete_response["data"]["data"])
+    
+    def test_delete_file_from_card_no_file(self):
+        # This method tests attempting to delete a file from a card with an id that exists in the db but doesn't have a file
+        # This operation shouldn't be performable by a user through normal application use, but is still not a valid operation
+
+        # The card matching the put_card_id should not contain any files, so we expect a 422
+        delete_rest_call(self, f"http://localhost:3002/cards/{self.put_card_id}/file", expected_code=422)
 
 def compare_file_to_response(test, file_path, response_file_data, checked_bytes=500):
     """
@@ -348,7 +384,7 @@ def compare_file_to_response(test, file_path, response_file_data, checked_bytes=
         test: a method in a TestCase class
         file_path (str): the path to the file being compared
         response_file_data (array): this is an array of binary data returned as part of a GET request to a DB entry that contains a file
-        checked_bytes (int): This defines how many bytes are compared. We don't want or need to compare the entire file
+        checked_bytes (int): --OPTIONAL-- This defines how many bytes are compared. We don't want or need to compare the entire file
     """
     with open(file_path, "rb") as local_file:
         file_base64_contents = binascii.b2a_base64(local_file.read())[:checked_bytes]
