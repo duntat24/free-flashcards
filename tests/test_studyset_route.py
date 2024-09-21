@@ -32,7 +32,7 @@ class StudySetRouteTests(unittest.TestCase):
 
         created_set_body = {"title": "This will be deleted"}
         created_set_string = json.dumps(created_set_body) # This converts the dictionary to a json in string format
-        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
         
         post_response = post_rest_call(self, "http://localhost:3002/sets", request_parameters=created_set_string, 
                                        request_header=header)
@@ -46,7 +46,7 @@ class StudySetRouteTests(unittest.TestCase):
 
         created_set_body = {"notATitle": "no"}
         created_set_string = json.dumps(created_set_body) # This converts the dictionary to a json in string format
-        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
         
         post_rest_call(self, "http://localhost:3002/sets", request_parameters=created_set_string, request_header=header, expected_code=400)
 
@@ -55,7 +55,7 @@ class StudySetRouteTests(unittest.TestCase):
 
         created_set_body = {"title": ""}
         created_set_string = json.dumps(created_set_body) # This converts the dictionary to a json in string format
-        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
         
         post_rest_call(self, "http://localhost:3002/sets", request_parameters=created_set_string, request_header=header, expected_code=400)
 
@@ -64,7 +64,7 @@ class StudySetRouteTests(unittest.TestCase):
 
         created_set_body = {"title": " \t\n "}
         created_set_string = json.dumps(created_set_body) # This converts the dictionary to a json in string format
-        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
         
         post_rest_call(self, "http://localhost:3002/sets", request_parameters=created_set_string, request_header=header, expected_code=400)
 
@@ -90,7 +90,7 @@ class StudySetRouteTests(unittest.TestCase):
         # We first create the study set that we're going to delete to ensure the target of our action always exists
         created_set_body = {"title": "This will be deleted"}
         created_set_string = json.dumps(created_set_body) # This converts the dictionary to a json in string format
-        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
         
         post_response = post_rest_call(self, "http://localhost:3002/sets", request_parameters=created_set_string, 
                                        request_header=header)
@@ -128,7 +128,7 @@ class StudySetRouteTests(unittest.TestCase):
         # This should give different response code from attempting to get a study set with an invalidly formatted id
 
         get_response = get_rest_call(self, f"http://localhost:3002/sets/{self.id_doesnt_exist}", expected_code=404)
-        expected_get_404_message = "Study Set does not exist"
+        expected_get_404_message = "Study Set does not exist" # We need to verify that this 404 code is because the resource doesn't exist, not because of an invalid URL
         self.assertEqual(expected_get_404_message, get_response["error"]["message"],
                          f"Expected 404 message of '{expected_get_404_message}' but instead got '{get_response["error"]["message"]}'")
 
@@ -153,11 +153,11 @@ class StudySetRouteTests(unittest.TestCase):
         
         updated_set_title = {"title": "A brand new title"}
         updated_set_string = json.dumps(updated_set_title) # This converts the dictionary to a json in string format
-        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
 
         put_response = put_rest_call(self, f"http://localhost:3002/sets/{self.id_doesnt_exist}", 
                       request_parameters=updated_set_string, request_header=header, expected_code=404)
-        expected_put_404_message = "Study set does not exist"
+        expected_put_404_message = "Study set does not exist" # We need to verify that this 404 code is because the resource doesn't exist, not because of an invalid URL
         self.assertEqual(expected_put_404_message, put_response["error"]["message"])
 
     def test_update_study_set_invalid_id(self):
@@ -166,7 +166,7 @@ class StudySetRouteTests(unittest.TestCase):
 
         updated_set_title = {"title": "A brand new title"}
         updated_set_string = json.dumps(updated_set_title) # This converts the dictionary to a json in string format
-        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
 
         put_rest_call(self, f"http://localhost:3002/sets/{self.id_invalid}", request_parameters=updated_set_string, 
                       request_header=header, expected_code=400)
@@ -176,12 +176,109 @@ class StudySetRouteTests(unittest.TestCase):
 
         updated_set_title = {"title": "A brand new title"}
         updated_set_string = json.dumps(updated_set_title) # This converts the dictionary to a json in string format
-        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
 
         put_response = put_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}", request_parameters=updated_set_string, 
                                         request_header=header)
         self.assertEqual(updated_set_title["title"], put_response["title"],
                          f"Expected newly created title of '{updated_set_title["title"]}' but instead got '{put_response["title"]}'")
 
-    # TODO: (along with testing all the routes & branches) - we need to add functionality for an array of quiz scores (floats)
+    def test_add_card_to_study_set_doesnt_exist(self):
+        # This method tests attempting to add a card to a study set with an id not present in the db
+        # This should give different response code from attempting to add a card with an invalidly formatted id
+
+        created_card_body = {"prompt": "Uh oh", "response": "Oh no", "userResponseType": "text"}
+        created_card_string = json.dumps(created_card_body) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_result = post_rest_call(self, f"http://localhost:3002/sets/{self.id_doesnt_exist}", request_parameters=created_card_string,
+                                       request_header=header, expected_code=404)
+        post_404_expected_message = "Study Set does not exist" # We need to verify that this 404 code is because the resource doesn't exist, not because of an invalid URL
+        self.assertEqual(post_404_expected_message, post_result["error"]["message"],
+                         f"Expected a 404 message of '{post_404_expected_message}' but instead got '{post_result["error"]["message"]}'")
+
+    def test_add_card_to_study_set_invalid_id(self):
+        # This method tests attempting to add a card to a study set with an invalidly formatted id 
+        # This should give different response code from attempting to add a card with an id not present in the db
+        
+        created_card_body = {"prompt": "Uh oh", "response": "Oh no", "userResponseType": "text"}
+        created_card_string = json.dumps(created_card_body) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        post_rest_call(self, f"http://localhost:3002/sets/{self.id_invalid}", request_parameters=created_card_string,
+                                       request_header=header, expected_code=400)
+
+    def test_delete_card_from_study_set_doesnt_exist(self):
+        # This method tests attempting to delete a card from a study set with a set id not present in the db
+        # This should give different response code than attempting to delete a card with an invalidly formatted set id
+
+        # Checking that the study set doesn't exist takes priority over checking that the card id exists, so we don't need to have a valid card id to pass
+        delete_response = delete_rest_call(self, f"http://localhost:3002/sets/{self.id_doesnt_exist}/{self.id_doesnt_exist}", 
+                                           expected_code=404)
+        expected_set_404_message = "Study set does not exist"  # We need to verify that this 404 code is because the resource doesn't exist, not because of an invalid URL
+        self.assertEqual(expected_set_404_message, delete_response["error"]["message"],
+                         f"Expected a 404 response message of '{expected_set_404_message}' but instead got '{delete_response["error"]["message"]}'")
+
+    def test_delete_card_from_study_set_invalid_id(self):
+        # This method tests attempting to delete a card from a study set with an invalidly formatted set id
+        # This should give different response code than attempting to delete a card with a set id that doesn't exist
+       
+        # Checking that the study set doesn't exist takes priority over checking that the card id exists, so we don't need to have a valid card id to pass
+        delete_rest_call(self, f"http://localhost:3002/sets/{self.id_invalid}/{self.id_doesnt_exist}", 
+                                           expected_code=400)
+        
+    def test_delete_card_from_study_set_card_doesnt_exist(self):
+        # This method tests attempting to delete a card from a study set with a card id not present in the db
+        # This should give different response code than attempting to delete a card with an invalidly formatted card id
+        
+        delete_response = delete_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}/{self.id_doesnt_exist}",
+                                            expected_code=404)
+        expected_card_404_message = "Flashcard does not exist"  # We need to verify that this 404 code is because the resource doesn't exist, not because of an invalid URL
+        self.assertEqual(expected_card_404_message, delete_response["error"]["message"],
+                         f"Expected a 404 response message of '{expected_card_404_message}' but instead got '{delete_response["error"]["message"]}'")
+
+    def test_delete_card_from_study_set_card_invalid_id(self):
+        # This method tests attempting to delete a card from a study set with an invalidly formatted card id
+        # This should give different response code than attempting to delete a card with a card id that doesn't exist
+        
+        delete_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}/{self.id_invalid}",
+                            expected_code=400)
+
+    def test_add_card_and_delete_card_to_study_set_exists(self):
+        # This method tests attempting to add a card to a study set with a valid set id, then tests attempting to delete that card 
+        # We are bundling these two features into one test so we can ensure that the state of the test db after our test is the same as before we executed it
+        # If we separated this into two tests we would either not be able to guarantee that, or we would be repeating a lot of our test code across those two methods
+
+        created_card_body = {"prompt": "Uh oh", "response": "Oh no", "userResponseType": "text"}
+        created_card_string = json.dumps(created_card_body) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the string being interpreted as a JSON
+
+        # we are assuming the added card will be in the 4th position in the array - this could be susceptible to changes to the testing db
+        added_card_id = post_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}", request_parameters=created_card_string,
+                                       request_header=header)["cards"][3]
+        
+        # Getting the card to verify it has been added properly
+        stored_card_data = get_rest_call(self, f"http://localhost:3002/cards/{added_card_id}")
+        self.assertEqual(created_card_body["prompt"], stored_card_data["prompt"], 
+                         f"Expected prompt '{created_card_body["prompt"]}' but instead got '{stored_card_data["prompt"]}'")
+        self.assertEqual(created_card_body["response"], stored_card_data["response"], 
+                         f"Expected response '{created_card_body["response"]}' but instead got '{stored_card_data["response"]}'")
+        self.assertEqual(created_card_body["userResponseType"], stored_card_data["userResponseType"], 
+                         f"Expected user response type of '{created_card_body["userResponseType"]}' but instead got '{stored_card_data["userResponseType"]}'")
+
+        # Deleting the added card from the db. We should get a 404 when trying to directly access the card & its id should be present when fetching the set it was added to
+        delete_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}/{added_card_id}")
+
+        get_card_result = get_rest_call(self, f"http://localhost:3002/cards/{added_card_id}", expected_code=404)
+        expected_card_404_message = "Flashcard does not exist" # We need to verify that this 404 code is because the resource doesn't exist, not because of an invalid URL
+        self.assertEqual(expected_card_404_message, get_card_result["error"]["message"])
+
+        # Verifying that the added card's id is not present in the target set's array of its contained card ids
+        get_set_result = get_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}")
+        set_card_ids = get_set_result["cards"]
+        self.assertFalse(added_card_id in set_card_ids) 
+
+    # TODO: we need to add functionality for an array of quiz scores (floats) that the user can add & remove from
+    
     # TODO (for test_flashcard_route.py): Need to verify that 404 messages are for the targeted resource and not caused by attempting to hit a route that doesn't exist
+        # Also need to update the comment for the 'header' - mentions a 'user string', not sure where this typo came from
