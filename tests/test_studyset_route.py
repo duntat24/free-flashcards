@@ -70,7 +70,7 @@ class StudySetRouteTests(unittest.TestCase):
 
     def test_delete_study_set_doesnt_exist(self):
         # This method tests attempting to delete a study set with an id not present in the db
-        # This should give different response code from attemtping to delete a study set with an invalidly formatted id
+        # This should give different response code from attempting to delete a study set with an invalidly formatted id
 
         delete_response = delete_rest_call(self, f"http://localhost:3002/sets/{self.id_doesnt_exist}", expected_code=404)
         expected_deletion_404_message = "Study Set does not exist" # we need to ensure the 404 is caused by the resource not existing in the db, not an invalid url
@@ -79,7 +79,7 @@ class StudySetRouteTests(unittest.TestCase):
 
     def test_delete_study_set_invalid_id(self):
         # This method tests attempting to delete a study set with an invalidly formatted id
-        # This should give different response code from attemtping to delete a study set with a validly formatted id that doesn't exist
+        # This should give different response code from attempting to delete a study set with a validly formatted id that doesn't exist
 
         delete_rest_call(self, f"http://localhost:3002/sets/{self.id_invalid}", expected_code=400)
         # The assert to ensure the response code is correct is done inside the method
@@ -125,7 +125,7 @@ class StudySetRouteTests(unittest.TestCase):
 
     def test_get_study_set_doesnt_exist(self):
         # This method tests attempting to get a study set with an id not present in the db
-        # This should give different response code from attemtping to get a study set with an invalidly formatted id
+        # This should give different response code from attempting to get a study set with an invalidly formatted id
 
         get_response = get_rest_call(self, f"http://localhost:3002/sets/{self.id_doesnt_exist}", expected_code=404)
         expected_get_404_message = "Study Set does not exist"
@@ -134,10 +134,54 @@ class StudySetRouteTests(unittest.TestCase):
 
     def test_get_study_set_invalid_id(self):
         # This method tests attempting to get a study set with an invalidly formatted id
-        # This should give different response code from attemtping to get a study set with a validly formatted id that doesn't exist
+        # This should give different response code from attempting to get a study set with a validly formatted id that doesn't exist
 
         get_rest_call(self, f"http://localhost:3002/sets/{self.id_invalid}", expected_code=400)
         # The get_rest_call method asserts that the response code is 400, so we don't need to do anything else
+
+    def test_get_study_set_exists(self):
+        # This method tests attempting to get a study set when the id exists in the db
+        
+        get_response = get_rest_call(self, f"http://localhost:3002/sets/{self.unmodified_set_id}")
+        expected_title = "don't modify me" # NOTE this can change depending on the test data in the test db
+        self.assertEqual(expected_title, get_response["title"],
+                         f"Expected title of '{expected_title}' but instead got '{get_response["title"]}")
+
+    def test_update_study_set_doesnt_exist(self):
+        # This method tests attempting to update the title of a study set with an id not present in the db
+        # This should give different response code from attempting to update a study set with an invalidly formatted id
+        
+        updated_set_title = {"title": "A brand new title"}
+        updated_set_string = json.dumps(updated_set_title) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+
+        put_response = put_rest_call(self, f"http://localhost:3002/sets/{self.id_doesnt_exist}", 
+                      request_parameters=updated_set_string, request_header=header, expected_code=404)
+        expected_put_404_message = "Study set does not exist"
+        self.assertEqual(expected_put_404_message, put_response["error"]["message"])
+
+    def test_update_study_set_invalid_id(self):
+        # This method tests attempting to update the title of a study set with an invalidly formatted id
+        # This should give different response code from attempting to update a study set with an invalidly formatted id
+
+        updated_set_title = {"title": "A brand new title"}
+        updated_set_string = json.dumps(updated_set_title) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+
+        put_rest_call(self, f"http://localhost:3002/sets/{self.id_invalid}", request_parameters=updated_set_string, 
+                      request_header=header, expected_code=400)
+
+    def test_update_study_set_exists(self):
+        # This method tests attempting to update the title of a study set that exists in the db
+
+        updated_set_title = {"title": "A brand new title"}
+        updated_set_string = json.dumps(updated_set_title) # This converts the dictionary to a json in string format
+        header = {"Content-Type": "application/json"} # This header results in the user string being interpreted as a JSON
+
+        put_response = put_rest_call(self, f"http://localhost:3002/sets/{self.tested_set_id}", request_parameters=updated_set_string, 
+                                        request_header=header)
+        self.assertEqual(updated_set_title["title"], put_response["title"],
+                         f"Expected newly created title of '{updated_set_title["title"]}' but instead got '{put_response["title"]}'")
 
     # TODO: (along with testing all the routes & branches) - we need to add functionality for an array of quiz scores (floats)
     # TODO (for test_flashcard_route.py): Need to verify that 404 messages are for the targeted resource and not caused by attempting to hit a route that doesn't exist

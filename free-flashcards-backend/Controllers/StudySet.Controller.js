@@ -87,9 +87,10 @@ module.exports = {
 
     updateStudySetTitle : async (request, response, next) => { // update the title of a study set with a specified id
         try {
+            const options = {new: true}; // we return the newly modified set title
             const updatedId = request.params.id;
             const updatedBody = request.body; // this method only needs the title from the body
-            const result = await StudySet.findByIdAndUpdate(updatedId, {title: updatedBody.title});
+            const result = await StudySet.findByIdAndUpdate(updatedId, {title: updatedBody.title}, options);
             if (result === null) { // no set was found matching the provided id
                 next(createError(404, "Study set does not exist")); 
             } else {
