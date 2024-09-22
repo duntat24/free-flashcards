@@ -126,8 +126,8 @@ function getStudiedSet(id, studySets) {
 
 // This method takes a file buffer from a request and converts it to a Base64 string to be displayed by our application
 function arrayBufferToBase64(buffer) {
-    var binary = '';
-    var bytes = new Uint8Array(buffer);
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
     for (let i = 0; i < bytes.byteLength; i++) { // by constructing our array iteratively we avoid errors from the call stack being too large
         binary += String.fromCharCode(bytes[i]);
     }
