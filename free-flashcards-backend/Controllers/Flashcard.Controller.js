@@ -122,7 +122,7 @@ module.exports = {
             if (error instanceof mongoose.CastError) {
                 next(createError(400, "Invalid flashcard id"));
             }
-            if (error.name === "BSONError") {
+            if (error.name === "BSONError") { // This code may no longer be reachable, need to test
                 next(createError(400, "Invalid file attached"));
             }
             next(error);
@@ -164,9 +164,9 @@ module.exports = {
 // it returns the entity to be returned to the client (status code and error message, if applicable)
 function validateFileInput(file) {
     let response = {code: 200, message: "OK"};
-    if (file === null || file === undefined) {
+    if (file === null || file === undefined) { // this condition may be impossible to trigger because there is a check at the start of the addFileToCard method for this
         response.code = 400;
-        response.message = "Request does not contain a file";
+        response.message = "No file attached";
         return response; // we need to return response immediately here to not get errors for checking undefined fields
     }
     if (file.data.length > MAX_FILE_SIZE) {
