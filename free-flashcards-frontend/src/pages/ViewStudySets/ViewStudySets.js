@@ -8,7 +8,8 @@ export default function ViewStudySets({studySets}) {
         return <li key={studySet.id} className="set-display-overview">
             <h3 className="set-display-title">Title: {studySet.title}</h3> 
             <h4 className="set-display-cardcount">Number of flashcards: {studySet.cardIds.length}</h4>
-            <Link to={`/sets/${studySet.id}/study`} className="study-sets">Study</Link>
+            <Link to={`/sets/${studySet.id}/study`} className="study-set-display-link">Study</Link><br/>
+            <Link to={`/sets/${studySet.id}/quiz`} className="study-set-display-link">Quiz</Link><br/>
         </li>
     });
     return <>

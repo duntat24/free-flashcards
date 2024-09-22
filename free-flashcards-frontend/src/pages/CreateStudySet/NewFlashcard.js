@@ -13,14 +13,14 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
         const changedFile = event.target.files[0];
 
         const validateFileResult = validateFileInput(changedFile, MAX_FILE_SIZE);
-        if (validateFileResult === null) {
+        if (validateFileResult === null) { // this means there is no file attached to the card
             setFile(null);
             setFileIsPrompt(null);
             updateCard(card.prompt, card.response, card.id, {file: null, isPrompt: null}, card.userResponseType);
         } else if (validateFileResult === "") { // validateFileInput returns the appropriate error message if a file input is invalid
             setFile(changedFile);
             updateCard(card.prompt, card.response, card.id, {file: changedFile, isPrompt: card.fileJSON.isPrompt}, card.userResponseType);
-        } else {
+        } else { // this means the validateFileResult method returned some sort of error message and we should respond appropriately
             alert(validateFileResult);
             event.target.value = null;
             setFile(null);
@@ -76,7 +76,6 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
         {file === null ? <></> : fileAssociationJSX}
         
         <button className="delete-new-flaschard-button" onClick={() => removeCard(card.id)}>Del</button>
-        <p>{fileIsPrompt === null ? "Null" : fileIsPrompt ? "Prompt" : "Response"}</p>
     </form>
 }
 
