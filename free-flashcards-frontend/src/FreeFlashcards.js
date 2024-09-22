@@ -1,4 +1,3 @@
-import FileUploader from './FileUploader.js';
 import Navbar from './Navbar.js';
 import './FreeFlashcards.css';
 import { useEffect, useState } from 'react';
@@ -13,9 +12,11 @@ import CreateFlashcardSet from './pages/CreateStudySet/CreateStudySet.js';
 export default function FlashcardApp() {
   
   const [studySets, setStudySets] = useState(null);
+  // This state is changed when we need to request study sets from the API - any component that may make this necessary gets the setRequestStudySets method
+  const [requestStudySets, setRequestStudySets] = useState(false);
 
   useEffect(() => {
-    // once we're sending this application from our API we will be able to dynamically determine this (avoids the app breaking if we switch to https or a new domain name)
+    // once we're sending the react application from the server we will be able to dynamically determine this (avoids the app breaking if we switch to https or a new domain name)
     const flashcardsUrl = `http://localhost:3001/sets`;  
     axios.get(flashcardsUrl).then((response) => {
       
@@ -32,22 +33,19 @@ export default function FlashcardApp() {
         */
 
     });
-  }, []); // may not be correct to have the dependency array be empty, we should be refreshing this when we make a new PUT/POST request
+  }, [requestStudySets]); // not sure the best way to accomplish this, we should be refreshing the application's study sets when we update the flashcards in a set by adding/editing/deleting them or adding/deleting sets
 
   // this holds the content on the page where users can study their created sets
   // needs a quiz mode to allow for free response as well as drawn & recorded responses
 
-  /*let studyView = <> // this should be extracted into its own component with a route
-    <StudyFlashcards
-      setStudiedSet={setStudiedSet}
-      studiedSet={studiedSet}
-    />
-  </>*/
-  // using :<variable_name> allows us to have paths with variables (such as object ids that we will be fetching)
+  // using ':<variable_name>' in routes allows us to have paths with variables (such as object ids that we will be fetching)
   return <div className="whole-page">
     <Navbar/>
     <Routes> 
-      <Route path="/sets" element={<CreateFlashcardSet/>}/>
+      <Route path="/sets" element={<CreateFlashcardSet
+                                    setRequestStudySets={setRequestStudySets}
+                                    requestStudySets={requestStudySets}
+                                  />}/>
       <Route path="/*" element={<ViewStudySets
                                 studySets={studySets}  
                               />}/>
@@ -62,7 +60,6 @@ export default function FlashcardApp() {
                                               studySets={studySets}
                                             />}/>
     </Routes>
-    <FileUploader/>
   </div>
 }
 
