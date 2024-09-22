@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export default function ViewStudySets({studySets}) {
     if (studySets === null) {
@@ -8,14 +8,12 @@ export default function ViewStudySets({studySets}) {
         return <li key={studySet.id} className="set-display-overview">
             <h3 className="set-display-title">Title: {studySet.title}</h3> 
             <h4 className="set-display-cardcount">Number of flashcards: {studySet.cardIds.length}</h4>
+            <Link to={`/sets/${studySet.id}/study`} className="study-sets">Study</Link>
         </li>
     });
     return <>
         <ul className="sets-list">
             {displayedStudySets}
         </ul>
-        <Routes>
-
-        </Routes>
     </>
 }

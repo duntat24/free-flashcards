@@ -1,4 +1,3 @@
-import FileUploader from './FileUploader.js';
 import Navbar from './Navbar.js';
 import './FreeFlashcards.css';
 import { useEffect, useState } from 'react';
@@ -39,13 +38,6 @@ export default function FlashcardApp() {
   // this holds the content on the page where users can study their created sets
   // needs a quiz mode to allow for free response as well as drawn & recorded responses
 
-  /*let studyView = <> // this should be extracted into its own component with a route
-    <StudyFlashcards
-      setStudiedSet={setStudiedSet}
-      studiedSet={studiedSet}
-    />
-  </>*/
-
   // using ':<variable_name>' in routes allows us to have paths with variables (such as object ids that we will be fetching)
   return <div className="whole-page">
     <Navbar/>
@@ -68,7 +60,6 @@ export default function FlashcardApp() {
                                               studySets={studySets}
                                             />}/>
     </Routes>
-    <FileUploader/>
   </div>
 }
 

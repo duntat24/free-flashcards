@@ -82,7 +82,9 @@ export default function CreateFlashcardSet({requestStudySets, setRequestStudySet
         });
 
         setRequestStudySets(!requestStudySets); // attempting to save refreshes the application's stored study sets
-        // an attempt to save should update the cards displayed on the home page
+        /*
+            TODO: Likely a race condition, updating the stored study sets shows a newly created set with 0 cards in it
+        */
 
         /*
         // this clears the cards and title of the set we were creating on the frontend so users can more easily create another new study set
