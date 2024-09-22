@@ -1,3 +1,6 @@
+// NOTE: This is no longer used on the frontend since we only get the flashcards in a set 
+// Consider deleting
+
 export default function ExpandedSetList({set, setStudiedSet, deleteFlashcardSet}) {
     // this converts all the card prompts in the set into list items that can then be displayed
     let displaySet = set.cards.map(card => (
