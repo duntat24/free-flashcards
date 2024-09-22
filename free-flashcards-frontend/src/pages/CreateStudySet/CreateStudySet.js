@@ -27,16 +27,15 @@ export default function CreateFlashcardSet() {
         ));
     }
     function saveSet() {
-        /*
-            Need to make an API call here
-        */
         // first need to validate that all the cards have a valid state - non-empty prompt and response, indicate whether file is for a prompt or response
         if (!validateCards(cards) || setTitle === "") {
             alert("Please ensure all entered data is valid"); // there should be more graceful error handling than this
             return;
-            // 1. don't use alert
+
+            // 1. Using alert may be intrusive, can test both with and without
             // 2. Clearly indicate which fields are invalid & why
             // (should do this later, for now just get base functionality up)
+
         }
         const setPostURL = "http://localhost:3001/sets";
         const newSetData = {title: setTitle};
@@ -45,11 +44,29 @@ export default function CreateFlashcardSet() {
             
             // executing this logic after the response is received ensures we've received the set ID to post to
             const cardPostURL = "http://localhost:3001/sets/" + newSetId;
+            const addFileRootUrl = "http://localhost:3001/cards" // need to add the targeted card id and the ending "/file"
             for (let i = 0; i < cards.length; i++) {
                 let card = cards[i];
                 axios.post(cardPostURL, {prompt: card.prompt, response: card.response, 
                         userResponseType: card.userResponseType}).then((response) => {
-                            console.log(response);
+                            const addedCardId = response.data.cards[i];
+                            console.log(addedCardId);
+                            console.log(card.fileJSON);
+                            if (card.fileJSON.file !== null) {
+                                const formData = new FormData();
+                                formData.append("file", card.fileJSON.file); 
+                                formData.append("partOfPrompt", card.fileJSON.isPrompt);
+                                const requestConfiguration = {
+                                    headers: {
+                                      'content-type': 'multipart/form-data', // important to tell the server what is in the request
+                                    },
+                                };
+                                axios.post(`${addFileRootUrl}/${addedCardId}/file` , formData, requestConfiguration).then((response) => {    
+                                    console.log(response);
+                                }).catch((error) => {
+                                    console.log(error);
+                                });
+                            }
                         }).catch((error) => {
                             console.log(error);
                             return; // we need more graceful handling than this, we don't want to partially post a set to the API
@@ -105,7 +122,8 @@ function validateCards(cards) {
     }
     for (let i = 0; i < cards.length; i++) {
         const currentCard = cards[i];
-        if (currentCard.prompt === "" || currentCard.response === "") { // prompt and response can't be null
+        // NOTE: not clear if the prompt and/or response should be allowed to be empty if there is a file displayed as part of the prompt or response
+        if (currentCard.prompt === "" || currentCard.response === "") { // prompt and response can't be empty
             return false;
         }
         if (currentCard.fileJSON.file !== null && currentCard.fileJSON.isPrompt === null) { // user must indicate where a file should be displayed as part of a card 
