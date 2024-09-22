@@ -23,7 +23,6 @@ export default function StudyFlashcards({studySets}) {
     
 
     useEffect(() => { // we need to fetch the cards in the targeted study set
-        //console.log(studiedSet);
         const cardsUrl = "http://localhost:3001/cards/"; // just need to append a card's id to make this a get request
         
         if (studiedSet === null || studiedSet === undefined) { // if the targeted study set doesn't exist we shouldnt be trying to fetch its cards
@@ -32,7 +31,7 @@ export default function StudyFlashcards({studySets}) {
         Promise.all(
             studiedSet.cardIds.map((cardId) => axios.get(`${cardsUrl}${cardId}`)) 
         ).then((data) => { // letting all the promises resolve before continuing
-            let addedCards = data.map((card) => {
+            let addedCards = data.map((card) => { // creating an array containing all the fetched card data from the API
                 if (card.data.file !== undefined) { // if the card contains a file
                     let cardFile = card.data.file;
                     return {prompt: card.data.prompt, response: card.data.response, userResponseType: card.data.userResponseType,
@@ -41,13 +40,11 @@ export default function StudyFlashcards({studySets}) {
                 } 
                 return {prompt: card.data.prompt, response: card.data.response, userResponseType: card.data.userResponseType}
             });
-            setStudiedSet({...studiedSet, cards: addedCards});
+            setStudiedSet({...studiedSet, cards: addedCards}); // adding the fetched card data to the study set
             console.log(addedCards);
         }).catch((error) => {
             console.log(error);
-        })
-        // console.log(newCards); // this doesn't have the returned value because the promise isn't resolved yet
-        
+        })        
     // eslint-disable-next-line
     }, []); // we only want to fetch & update the cards one time so we don't include a dependency array
     
@@ -85,7 +82,7 @@ export default function StudyFlashcards({studySets}) {
     let pageContent; // we will use this to stop the application from crashing if the targeted study set doesn't exist
     if (studiedSet === null || studiedSet === undefined) {
         pageContent = <h1>This study set doesn't seem to exist...</h1>
-    } else if (studiedSet.cards === undefined) {
+    } else if (studiedSet.cards === undefined) { // this occurs if the cards are loading, we should have a special case if the set has no cards
         pageContent = <>
             <h1 className="set-title">Studying: {studiedSet.title}</h1>
             <div className="current-flashcard">
