@@ -1,10 +1,14 @@
-
+import RecordResponse from './RecordResponse';
 
 export default function QuizItem({quizzedFlashcard, updateQuizResponse}) {
     // we will need a paramter to allow us to move state upwards - the quiz page class needs to know what the responses are
 
     function handleResponseChange(event) {
         updateQuizResponse(quizzedFlashcard.id, event.target.value);
+    }
+
+    function handleAudioResponse(data) {
+        updateQuizResponse(quizzedFlashcard.id, data);
     }
 
     let promptJSX;
@@ -25,6 +29,8 @@ export default function QuizItem({quizzedFlashcard, updateQuizResponse}) {
             <label htmlFor={quizzedFlashcard.id}>Response: </label>
             <input type="text" name="response" id={quizzedFlashcard.id} onChange={handleResponseChange}/>
         </>
+    } else if (quizzedFlashcard.userResponseType === "recorded") {
+        responseJSX = <RecordResponse setAudioData={handleAudioResponse}/>
     }
     
     return <>
