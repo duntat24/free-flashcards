@@ -80,3 +80,6 @@ ul.sets-list > li:active {
 .nav li:hover {
   background-color: seagreen;
 }
+.drawing-canvas {
+  border: 1px solid grey;
+}
