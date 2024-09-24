@@ -5,9 +5,6 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
 
     // this contains a file that may be associated with this flashcard
     const [file, setFile] = useState(null);
-    // this variable contains whether the associated file is meant to be displayed with the prompt or the response
-    // a value of null indicates that nothing has been selected and/or no file has been uploaded
-    const [fileIsPrompt, setFileIsPrompt] = useState(null);
 
     function handleUploadChange(event) { // puts files attached to the component's form into the file state variable
         const changedFile = event.target.files[0];
@@ -15,7 +12,6 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
         const validateFileResult = validateFileInput(changedFile, MAX_FILE_SIZE);
         if (validateFileResult === null) { // this means there is no file attached to the card
             setFile(null);
-            setFileIsPrompt(null);
             updateCard(card.prompt, card.response, card.id, {file: null, isPrompt: null}, card.userResponseType);
         } else if (validateFileResult === "") { // validateFileInput returns the appropriate error message if a file input is invalid
             setFile(changedFile);
@@ -24,14 +20,12 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
             alert(validateFileResult);
             event.target.value = null;
             setFile(null);
-            setFileIsPrompt(null);
             updateCard(card.prompt, card.response, card.id, {file: null, isPrompt: null}, card.userResponseType);
         }
     }
 
     function handleFileAssociationChange(event) {
         const isPrompt = event.target.value === "prompt"; // indicates whether the file will be associated with a prompt or a response
-        setFileIsPrompt(isPrompt); //
         updateCard(card.prompt, card.response, card.id, {file: card.fileJSON.file, isPrompt: isPrompt}, card.userResponseType);
     }
 
@@ -48,10 +42,10 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
     } 
 
     let fileAssociationJSX = <>
-        <input type="radio" id={"file-for-prompt" + (card.id + 1)} name="file-association" value="prompt" onChange={handleFileAssociationChange}/>
-        <label htmlFor={"file-for-prompt" + (card.id + 1)}>Prompt</label>
-        <input type="radio" id={"file-for-response" + (card.id + 1)} name="file-association" value="response" onChange={handleFileAssociationChange}/>
-        <label htmlFor={"file-for-prompt" + (card.id + 1)}>Response</label>
+        <input type="radio" id={"file-for-prompt" + (card.id)} name="file-association" value="prompt" onChange={handleFileAssociationChange}/>
+        <label htmlFor={"file-for-prompt" + (card.id)}>Prompt</label>
+        <input type="radio" id={"file-for-response" + (card.id)} name="file-association" value="response" onChange={handleFileAssociationChange}/>
+        <label htmlFor={"file-for-prompt" + (card.id)}>Response</label>
         <br/>
     </>
 
