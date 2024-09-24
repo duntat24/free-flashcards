@@ -50,9 +50,15 @@ export default function QuizResultItem({quizzedFlashcard, quizResponse, answers,
     // defining the JSX to display the correctness of the user's answer & allow manual grading & overriding of markings
     const matchingAnswer = findMatchingAnswer(quizzedFlashcard.id, answers);
     let displayedResultJSX = <></>;
+    let answerText;
+    if (matchingAnswer.answerCorrect === "unknown") {
+        answerText = "unknown";
+    } else { // if the answer's correctness is not unknown then it is a boolean
+        answerText = matchingAnswer.answerCorrect ? "true" : "false"; 
+    }
     if (matchingAnswer !== undefined) { // this condition shouldn't ever happen but better to not crash the application
         displayedResultJSX = <>
-            <h4>Your answer is correct: {matchingAnswer.answerCorrect}</h4>
+            <h4>Your answer is correct: {answerText}</h4>
             <h5 className="manual-override-text">(to mark drawn/recorded answers or override text answers) Answer is:</h5>
             
             <form>
