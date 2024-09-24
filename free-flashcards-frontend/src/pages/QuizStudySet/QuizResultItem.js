@@ -1,5 +1,6 @@
 export default function QuizResultItem({quizzedFlashcard, quizResponse, answers, updateCorrectness}) {
 
+    // this function handles a change to the buttons that allow a user to manually mark their answers
     function handleOverrideChange(event) {
         const isCorrect = event.target.value === "correct";
         updateCorrectness(quizzedFlashcard.id, isCorrect);

@@ -11,6 +11,9 @@ export default function QuizStudySet({studySets}) {
     // this is updated by the QuizItem elements
     const [quizResponses, setQuizResponses] = useState([]);
 
+    // this is used to indicate if we are looking at quiz results or not
+    // TOOD: update the URL to display /results
+        // we might be able to accomplish this with the Router module, but we can't define it on the homepage because we need quiz responses
     const [quizSubmitted, setQuizSubmitted] = useState(false);
     
     useEffect(() => { // we need to fetch the cards in the targeted study set
@@ -65,6 +68,7 @@ export default function QuizStudySet({studySets}) {
     for (let i = 0; i < quizQuestions.length; i++) { // adding question numbers to the array makes it easier to display them as part of the question
         quizQuestions[i] = {questionContent: quizQuestions[i], questionNumber: i+1};
     }
+    // this contains the JSX if a user is taking the quiz. Different content is displayed on a submission
     const quizContent = <>
         <h1>Quiz</h1>
         {quizQuestions.map((question) => {

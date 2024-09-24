@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 
 export default function Navbar() {
+    // This is displayed at the top of the page and allows the user to navigate between pages
+    
     return <nav className="nav">
         <ul>
             <li>

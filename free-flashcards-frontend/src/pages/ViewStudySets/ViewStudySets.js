@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
 
 export default function ViewStudySets({studySets}) {
+    // this component is displayed on the homepage and displays a list of the study sets that a user has
+
     if (studySets === null) {
         return <h2>Seems you don't have any study sets. Let's make some!</h2>
     }
+    // this variable contains the JSX to display a user's study sets
     const displayedStudySets = studySets.map(studySet => {
         return <li key={studySet.id} className="set-display-overview">
             <h3 className="set-display-title">Title: {studySet.title}</h3> 

@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 
 export default function DrawnResponseArea({setDrawnResponse}) {
 
-    const canvasRef = useRef(null); // this will hold our canvas so we can access and display it later
+    // this will hold our canvas so we can access and display it later
+    const canvasRef = useRef(null); 
     
     // this will hold information about how we draw on the canvas - text color, line style, etc - as well as our current action being performed
     const contextRef = useRef(null); 
@@ -12,6 +13,7 @@ export default function DrawnResponseArea({setDrawnResponse}) {
     // this variable can be toggled when we need to reset the canvas
     const [reset, setReset] = useState(false);
 
+    // sets up the canvas when the component mounts and resets the canvas when the value of 'reset' is toggled
     useEffect(() => {
         const canvas = canvasRef.current; 
         canvas.width = window.innerWidth / 3; // innerWidth is the browser viewport width

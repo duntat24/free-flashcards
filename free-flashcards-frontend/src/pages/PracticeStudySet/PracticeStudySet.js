@@ -4,15 +4,6 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 export default function StudyFlashcards({studySets}) {
-    /*
-
-        TODO: Will need to use the id route parameter that is provided to identify the correct study set from the list of sets
-
-    */
-
-    // this component will contain functionality to study user sets.
-
-    // need to add functionality to draw responses and record audio responses
     
     // this holds the current card being studied
     const [currentCardIndex, setCurrentCardIndex] = useState(0); // a study set with no cards should never be saved, so this shouldn't cause an error
@@ -21,8 +12,8 @@ export default function StudyFlashcards({studySets}) {
     // this holds the study set - we need to be able to fetch the cards from the ids contained on the homepage, so we need to be able to update the set we are passed down
     const [studiedSet, setStudiedSet] = useState(getStudiedSet(useParams().id, studySets));
     
-
-    useEffect(() => { // we need to fetch the cards in the targeted study set
+    // this hook to fetches the cards in the targeted study set ONLY when the component mounts
+    useEffect(() => { 
         const cardsUrl = "http://localhost:3001/cards/"; // just need to append a card's id to make this a get request
         
         if (studiedSet === null || studiedSet === undefined) { // if the targeted study set doesn't exist we shouldnt be trying to fetch its cards
@@ -48,6 +39,7 @@ export default function StudyFlashcards({studySets}) {
     // eslint-disable-next-line
     }, []); // we only want to fetch & update the cards one time so we don't include a dependency array
     
+    // this function is used to cycle through a set's flashcards, it is invoked when a user clicks the "back" button
     function decreaseCardIndex() {
         if (currentCardIndex === 0) { // avoiding making the index negative
             setCurrentCardIndex(studiedSet.cards.length - 1); // going to the end of the set
@@ -56,6 +48,7 @@ export default function StudyFlashcards({studySets}) {
         }
         setOnPromptSide(true); // we should always start on the prompt side when we change cards
     }
+    // this function is used to cycle through a set's flashcards, it is invoked when a user clicks the "forward" button
     function increaseCardIndex() {
         setCurrentCardIndex((currentCardIndex + 1) % studiedSet.cards.length); // wrapping back to 0
         setOnPromptSide(true); // we should always start on the prompt side when we change cards
@@ -70,6 +63,7 @@ export default function StudyFlashcards({studySets}) {
         if (currentCard.fileJSON.partOfPrompt !== onPromptSide) { // if the file isn't on our displayed side we just return the standard jsx
             return standardJSX;
         }
+        // if we get here then there should be a file on the displayed side of the flashcard
         const fileJSX = generateFileJSX(currentCard.fileJSON.fileType, currentCard.fileJSON.data);
         return <>
             {standardJSX}
@@ -78,8 +72,8 @@ export default function StudyFlashcards({studySets}) {
         </>
     }
     
-    //console.log(studiedSet);
-    let pageContent; // we will use this to stop the application from crashing if the targeted study set doesn't exist
+    let pageContent; // this holds all the content displayed on the page other than the link to go back to the home page
+    // we will use this to stop the application from crashing if the targeted study set doesn't exist
     if (studiedSet === null || studiedSet === undefined) {
         pageContent = <h1>This study set doesn't seem to exist...</h1>
     } else if (studiedSet.cards === undefined) { // this occurs if the cards are loading, we should have a special case if the set has no cards

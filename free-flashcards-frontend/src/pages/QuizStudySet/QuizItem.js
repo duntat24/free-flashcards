@@ -3,18 +3,16 @@ import DrawnResponseArea from './DrawnResponseArea';
 
 export default function QuizItem({quizzedFlashcard, updateQuizResponse}) {
 
+    // this function updates the user's response to the question contained by this component 
     function handleResponseChange(event) {
         updateQuizResponse(quizzedFlashcard.id, event.target.value);
     }
-
-    function handleAudioResponse(data) {
+    // this function updates the data stored when a user needs to draw or record a response to a quiz prompt
+    function handleFileResponse(data) {
         updateQuizResponse(quizzedFlashcard.id, data);
     }
 
-    function handleDrawnResponse(data) {
-        updateQuizResponse(quizzedFlashcard.id, data);
-    }
-
+    // this contains the JSX to display the prompt for the question
     let promptJSX;
     if (quizzedFlashcard.fileJSON === null || quizzedFlashcard.fileJSON === undefined ) { 
         promptJSX = <h3 className="quiz-question">{quizzedFlashcard.prompt}</h3>
@@ -27,6 +25,7 @@ export default function QuizItem({quizzedFlashcard, updateQuizResponse}) {
         </>
     }
 
+    // this contains the JSX to allow a user to respond to a question 
     let responseJSX;
     if (quizzedFlashcard.userResponseType === "text") {
         responseJSX = <>
@@ -34,9 +33,9 @@ export default function QuizItem({quizzedFlashcard, updateQuizResponse}) {
             <input type="text" name="response" id={quizzedFlashcard.id} onChange={handleResponseChange}/>
         </>
     } else if (quizzedFlashcard.userResponseType === "recorded") {
-        responseJSX = <RecordResponse setAudioData={handleAudioResponse}/>
+        responseJSX = <RecordResponse setAudioData={handleFileResponse}/>
     } else if (quizzedFlashcard.userResponseType === "drawn") {
-        responseJSX = <DrawnResponseArea setDrawnResponse={handleDrawnResponse}/>
+        responseJSX = <DrawnResponseArea setDrawnResponse={handleFileResponse}/>
     }
     
     return <div className="quiz-question-container" key={quizzedFlashcard.id}>

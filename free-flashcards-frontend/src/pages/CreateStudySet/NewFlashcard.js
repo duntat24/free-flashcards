@@ -6,7 +6,8 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
     // this contains a file that may be associated with this flashcard
     const [file, setFile] = useState(null);
 
-    function handleUploadChange(event) { // puts files attached to the component's form into the file state variable
+    // this function handles a change to the uploaded file when the user either adds a new file or removes their attached file
+    function handleUploadChange(event) { 
         const changedFile = event.target.files[0];
 
         const validateFileResult = validateFileInput(changedFile, MAX_FILE_SIZE);
@@ -23,34 +24,36 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
             updateCard(card.prompt, card.response, card.id, {file: null, isPrompt: null}, card.userResponseType);
         }
     }
-
+    // this function handles a change with the radio button that defines whether an attached file should be displayed as part of a prompt or response
     function handleFileAssociationChange(event) {
         const isPrompt = event.target.value === "prompt"; // indicates whether the file will be associated with a prompt or a response
         updateCard(card.prompt, card.response, card.id, {file: card.fileJSON.file, isPrompt: isPrompt}, card.userResponseType);
     }
-
+    // this function handles a change with the dropdown that determines what type of response the user should give for the flashcard
     function handleResponseTypeChange(event) {
         updateCard(card.prompt, card.response, card.id, card.fileJSON, event.target.value);
     }
-
+    // this function handles a change to the value of the 'prompt' field
     function handlePromptChange(event) {
         updateCard(event.target.value, card.response, card.id, card.fileJSON, card.userResponseType);
     } 
-
+    // this function handles a change to the value of the 'response' field
     function handleResponseChange(event) {
         updateCard(card.prompt, event.target.value, card.id, card.fileJSON, card.userResponseType);
     } 
 
+    // this JSX defines a radio button that allows a user to indicate whether an attached field should be displayed with the card's prompt or response
     let fileAssociationJSX = <>
-        <input type="radio" id={"file-for-prompt" + (card.id)} name="file-association" value="prompt" onChange={handleFileAssociationChange}/>
+        <input type="radio" id={"file-for-prompt" + (card.id)} name="file-association" value="prompt" 
+            onChange={handleFileAssociationChange}/>
         <label htmlFor={"file-for-prompt" + (card.id)}>Prompt</label>
-        <input type="radio" id={"file-for-response" + (card.id)} name="file-association" value="response" onChange={handleFileAssociationChange}/>
+        <input type="radio" id={"file-for-response" + (card.id)} name="file-association" value="response" 
+            onChange={handleFileAssociationChange}/>
         <label htmlFor={"file-for-prompt" + (card.id)}>Response</label>
         <br/>
     </>
 
     // this JSX is ultimately wrapped by <li> tags in an external method as react doesn't recognize keys properly if we return from inside this component
-    // {"prompt" + (card.id + 1)} gives each input field a unique id so htmlFor can associate correctly
     return <form> 
         <label htmlFor={"prompt" + (card.id + 1)}>Prompt: </label> <input type="text" name="prompt" id={"prompt" + (card.id + 1)} value={card.prompt} 
             onChange={handlePromptChange}/>
