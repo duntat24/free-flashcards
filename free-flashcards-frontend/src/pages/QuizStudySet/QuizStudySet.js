@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import axios from 'axios';
 import QuizItem from './QuizItem';
+import QuizResults from './QuizResults';
 
 export default function QuizStudySet({studySets}) {
 
@@ -9,9 +10,11 @@ export default function QuizStudySet({studySets}) {
 
     // this is updated by the QuizItem elements
     const [quizResponses, setQuizResponses] = useState([]);
+
+    const [quizSubmitted, setQuizSubmitted] = useState(false);
     
     useEffect(() => { // we need to fetch the cards in the targeted study set
-        const cardsUrl = "http://localhost:3001/cards/"; // just need to append a card's id to make this a get request
+        const cardsUrl = "http://localhost:3001/cards/"; // just need to append a card's id to make this a get request URL
         
         if (quizzedStudySet === null || quizzedStudySet === undefined) { // if the targeted study set doesn't exist we shouldnt be trying to fetch its cards
             return;
@@ -32,18 +35,27 @@ export default function QuizStudySet({studySets}) {
             setQuizResponses(addedCards.map((card) => {
                 return {id: card.id, userResponseType: card.userResponseType, responseData: ""};
             }));
-            console.log(addedCards);
         }).catch((error) => {
             console.log(error);
         })        
     // eslint-disable-next-line
     }, []); // we only want to fetch & update the cards one time so we don't include a dependency array
 
+    // this method is used by QuizItem components to write their response contents to the quizResponses array
     function updateQuizResponse(flashcardId, newResponseValue) {
         setQuizResponses(quizResponses.map((response) => {
             return response.id === flashcardId ? {...response, responseData: newResponseValue}: response
         }));
-        console.log(quizResponses);
+    }
+
+    // invoked by the 'submit' button at the bottom of the page
+    function submitQuiz() {
+        // validate that all submissions have an answer - no "" data or whitespace-only responses
+        if (!validateQuizResponses(quizResponses)) {
+            alert("You didn't answer every question - please finish the quiz before submitting! If you refreshed the page, you may need to re-enter your responses");
+            return;
+        }
+        setQuizSubmitted(true);
     }
 
     let quizQuestions = []; // this contains an array of QuizItem components that we will then display
@@ -53,13 +65,18 @@ export default function QuizStudySet({studySets}) {
     for (let i = 0; i < quizQuestions.length; i++) { // adding question numbers to the array makes it easier to display them as part of the question
         quizQuestions[i] = {questionContent: quizQuestions[i], questionNumber: i+1};
     }
-    return <>
-        <h1>Quiz Page</h1>
+    const quizContent = <>
+        <h1>Quiz</h1>
         {quizQuestions.map((question) => {
             return <>
-                <h1 className="quiz-question-number">{question.questionNumber}</h1>{question.questionContent}
+                <h1 className="quiz-question-number" key={question.questionNumber}>{question.questionNumber}</h1>{question.questionContent}
             </>
         })}
+        <button className="submit-quiz-button" onClick={submitQuiz}>Submit</button>
+    </>
+    return <>
+        {quizSubmitted ? <QuizResults responses={quizResponses} quizzedSet={quizzedStudySet}/> : 
+                         quizContent}
     </>
 
 }
@@ -85,4 +102,15 @@ function arrayBufferToBase64(buffer) {
         binary += String.fromCharCode(bytes[i]);
     }
     return window.btoa(binary);
+}
+
+// this function verifies that all the responses a user entered are valid. At the moment this only verifies that they don't contain only whitespace and aren't blank
+function validateQuizResponses(quizResponses) {
+    for (let i = 0; i < quizResponses.length; i++) { 
+        let quizResponse = quizResponses[i].responseData;
+        if (quizResponse.trim() === "") { // at the moment we only need to verify that the quiz response contains some non-whitespace characters
+            return false;
+        }
+    }
+    return true;
 }

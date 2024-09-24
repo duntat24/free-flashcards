@@ -1,12 +1,7 @@
 import RecordResponse from './RecordResponse';
 import DrawnResponseArea from './DrawnResponseArea';
 
-import { useState } from 'react';
-
 export default function QuizItem({quizzedFlashcard, updateQuizResponse}) {
-    // we will need a paramter to allow us to move state upwards - the quiz page class needs to know what the responses are
-
-    const [drawingData, setDrawingData] = useState(null);
 
     function handleResponseChange(event) {
         updateQuizResponse(quizzedFlashcard.id, event.target.value);
@@ -17,8 +12,7 @@ export default function QuizItem({quizzedFlashcard, updateQuizResponse}) {
     }
 
     function handleDrawnResponse(data) {
-        setDrawingData(data);
-        updateQuizResponse(data);
+        updateQuizResponse(quizzedFlashcard.id, data);
     }
 
     let promptJSX;
@@ -45,11 +39,10 @@ export default function QuizItem({quizzedFlashcard, updateQuizResponse}) {
         responseJSX = <DrawnResponseArea setDrawnResponse={handleDrawnResponse}/>
     }
     
-    return <>
+    return <div className="quiz-question-container" key={quizzedFlashcard.id}>
         {promptJSX}
         {responseJSX}
-        {drawingData === null ? <></> : <img src={drawingData} alt=""/>}
-    </>
+    </div>
 }
 
 // this function generates the JSX to display a file 
