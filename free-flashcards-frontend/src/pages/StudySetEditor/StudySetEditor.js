@@ -130,22 +130,27 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
         window.location.href = "http://localhost:3000"; // redirecting to the home page
     }
     
-    // this contains the JSX for the interface to allow users to modify the flashcards that will be modified in the set
-    let cardList = modifiedSet.cards.map(card => (
-        <li key={card.id} className="new-flashcard"> 
-            <EditableFlashcard
-                card={card}
-                removeCard={removeCard}
-                updateCard={updateCard}
-            />
-        </li>
-    ));
+    let cardList = <></>;
+    if (modifiedSet !== null) {
+        // this contains the JSX for the interface to allow users to modify the flashcards that will be modified in the set
+        cardList = modifiedSet.cards.map(card => (
+            <li key={card.id} className="new-flashcard"> 
+                <EditableFlashcard
+                    card={card}
+                    removeCard={removeCard}
+                    updateCard={updateCard}
+                />
+            </li>
+        ));
+    } 
     
-    console.log(modifiedSet);
-    return <><h1>Editing</h1>
+    if (modifiedSet === null) {
+        return <><h3>Loading...</h3></>
+    }
+    return <>
         <button className="add-flashcard-button" onClick={addCard}>Add Card</button>
         <label htmlFor="set-title">Set Title:</label>
-        <input type="text" name="set-title" id="set-title" value={modifiedSet.title} 
+        <input type="text" name="set-title" id="set-title" value={modifiedSet ? modifiedSet.title : "No title :("} 
             onChange={(e) => updateSetTitle(e.target.value)}></input>
         <ul className="new-card-list">
             {cardList}
