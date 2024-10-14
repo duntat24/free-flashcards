@@ -52,6 +52,8 @@ export default function FlashcardApp() {
       <Route path="/sets/:id/edit" element={<StudySetEditor
                                               studySets={studySets}
                                               updateSet={setStudySets}
+                                              setRequestStudySets={setRequestStudySets}
+                                              requestStudySets={requestStudySets}
                                             />}/>
       <Route path="/sets/:id/study" element={<PracticeStudySet
                                               studySets={studySets}

@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 export default function EditableFlashcard({card, removeCard, updateCard}) {
     const MAX_FILE_SIZE = 500000; // defines maximum file size in bytes
 
@@ -43,7 +41,7 @@ export default function EditableFlashcard({card, removeCard, updateCard}) {
         if (card.fileJSON === null) {
             return null; // no need to generate this JSX if there is no file to associate with it
         }
-        if (buttonType === "prompt" && card.fileJSON.partOfPrompt || buttonType === "response" && !card.fileJSON.partOfPrompt) {
+        if ((buttonType === "prompt" && card.fileJSON.partOfPrompt) || (buttonType === "response" && !card.fileJSON.partOfPrompt)) {
             return <input type="radio" id={`file-for-${buttonType}${card.id}`} name="file-association" value={buttonType}
                 onChange={handleFileAssociationChange} checked/>
         }

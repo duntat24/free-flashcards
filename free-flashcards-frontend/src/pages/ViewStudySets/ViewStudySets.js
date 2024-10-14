@@ -13,6 +13,7 @@ export default function ViewStudySets({studySets}) {
             <h4 className="set-display-cardcount">Number of flashcards: {studySet.cardIds.length}</h4>
             <Link to={`/sets/${studySet.id}/study`} className="study-set-display-link">Study</Link><br/>
             <Link to={`/sets/${studySet.id}/quiz`} className="study-set-display-link">Quiz</Link><br/>
+            <Link to={`/sets/${studySet.id}/edit`} className="study-set-display-link">Edit</Link><br/>
         </li>
     });
     return <>
