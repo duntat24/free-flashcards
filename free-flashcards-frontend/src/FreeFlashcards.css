@@ -3,6 +3,11 @@
   text-align: center; 
   border: 1px solid black;
 }
+.edited-flashcard-set {
+  margin: auto;
+  text-align: center;
+  border: 1px solid black;
+}
 .new-flashcard {
   padding: 1em;
   margin: auto;

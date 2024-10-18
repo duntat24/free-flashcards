@@ -23,11 +23,13 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
             let addedCards = data.map((card) => { // creating an array containing all the fetched card data from the API
                 if (card.data.file !== undefined) { // if the card contains a file
                     let cardFile = card.data.file;
-                    return {prompt: card.data.prompt, response: card.data.response, userResponseType: card.data.userResponseType,
+                    return {prompt: card.data.prompt, response: card.data.response, id: card.data._id, 
+                            userResponseType: card.data.userResponseType, modificationStatus: "unchanged", 
                             fileJSON: {data: arrayBufferToBase64(cardFile.data.data), 
                                        fileType: cardFile.fileType, partOfPrompt: cardFile.partOfPrompt}};
                 } 
-                return {prompt: card.data.prompt, response: card.data.response, userResponseType: card.data.userResponseType}
+                return {prompt: card.data.prompt, response: card.data.response, id: card.data._id, 
+                        userResponseType: card.data.userResponseType, modificationStatus: "unchanged"}
             });
             setModifiedSet({...newModifiedSet, cards: addedCards}); // adding the fetched card data to the study set
         }).catch((error) => {
@@ -36,22 +38,27 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
     // eslint-disable-next-line
     }, []); // we only want to fetch & update the cards one time so we don't include a dependency array
 
-    // this adds a blank card to the newly created set
+    // this adds a blank card to the set we're modifying
     function addCard() { 
-        updateCards([...modifiedSet.cards, {id: nextCardIdRef.current, prompt: "", response: "", fileJSON: {file: null, isPrompt: null}, userResponseType: "text"}]);
+        updateCards([...modifiedSet.cards, {id: nextCardIdRef.current, prompt: "", response: "", 
+                    fileJSON: {file: null, isPrompt: null}, userResponseType: "text", modificationStatus: "new"}]);
         nextCardIdRef.current += 1;
     }
 
-    // this removes the card with the specified id from the list of cards being added to the new stud yset
+    // this results in the specified card not being displayed and being deleted from the study set when a user saves their changes
     function removeCard(removedId) {
-        updateCards(modifiedSet.cards.filter(card => card.id !== removedId)); // finding and removing the card with the specified id
+        // finding the card with the removed id
+        const removedCard = modifiedSet.cards.filter(card => card.id === removedId)[0]; // we access the 0th index because .filter returns an array, in this case the array is always of length 1
+        updateCard(removedCard.prompt, removedCard.response, removedCard.id, removedCard.fileJSON, 
+                   removedCard.userResponseType, "deleted"); // setting the card's modification status to deleted
     }
 
     // this updates a flashcard with the provided ID and sets its fields based on the passed parameters
-    function updateCard(newPrompt, newResponse, cardId, newFileJSON, newUserResponseType) { // this is used to update cards when the user edits a prompt or response
+    function updateCard(newPrompt, newResponse, cardId, newFileJSON, newUserResponseType, newModificationStatus) { // this is used to update cards when the user edits a prompt or response
         updateCards(modifiedSet.cards.map(card => 
             card.id === cardId ? {id: cardId, prompt: newPrompt, response: newResponse, 
-                                  fileJSON: newFileJSON, userResponseType: newUserResponseType}: card
+                                  fileJSON: newFileJSON, userResponseType: newUserResponseType, 
+                                  modificationStatus: newModificationStatus}: card
         ));
     }
 
@@ -133,31 +140,33 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
     let cardList = <></>;
     if (modifiedSet !== null) {
         // this contains the JSX for the interface to allow users to modify the flashcards that will be modified in the set
-        cardList = modifiedSet.cards.map(card => (
-            <li key={card.id} className="new-flashcard"> 
-                <EditableFlashcard
-                    card={card}
-                    removeCard={removeCard}
-                    updateCard={updateCard}
-                />
-            </li>
-        ));
+        cardList = modifiedSet.cards.filter(card => card.modificationStatus !== "deleted").map(card => {
+            return <li key={card.id} className="new-flashcard"> 
+                        <EditableFlashcard
+                            card={card}
+                            removeCard={removeCard}
+                            updateCard={updateCard}
+                        />
+                    </li>
+        });
     } 
     
     if (modifiedSet === null) {
         return <><h3>Loading...</h3></>
     }
-    return <>
-        <button className="add-flashcard-button" onClick={addCard}>Add Card</button>
+    console.log(modifiedSet);
+    return <div className="edited-flashcard-set">
         <label htmlFor="set-title">Set Title:</label>
+        <button className="add-flashcard-button" onClick={addCard}>Add Card</button><br/>
         <input type="text" name="set-title" id="set-title" value={modifiedSet ? modifiedSet.title : "No title :("} 
             onChange={(e) => updateSetTitle(e.target.value)}></input>
         <ul className="new-card-list">
             {cardList}
         </ul>
-        <button className="save-button" onClick={makeUpdateRequest}>Save Changes</button>
-        <button>Discard Changes</button>
-    </>
+        <button className="edit-termination-button" onClick={makeUpdateRequest}>Save Changes</button>
+        <button className="edit-termination-button" onClick={() => window.location.href="http://localhost:3000"}>
+            Discard Changes</button>
+    </div>
 }
 
 // This method takes a file buffer from a request and converts it to a Base64 string to be displayed by our application
