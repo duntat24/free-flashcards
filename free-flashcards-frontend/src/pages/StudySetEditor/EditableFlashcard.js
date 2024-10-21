@@ -7,31 +7,31 @@ export default function EditableFlashcard({card, removeCard, updateCard}) {
 
         const validateFileResult = validateFileInput(changedFile, MAX_FILE_SIZE);
         if (validateFileResult === null) { // this means there is no file attached to the card
-            updateCard(card.prompt, card.response, card.id, null, card.userResponseType, "edited");
+            updateCard(card.prompt, card.response, card.id, null, card.userResponseType, "edited", "deleted");
         } else if (validateFileResult === "") { // validateFileInput returns the appropriate error message if a file input is invalid
-            updateCard(card.prompt, card.response, card.id, {file: changedFile, isPrompt: null}, card.userResponseType, "edited");
+            updateCard(card.prompt, card.response, card.id, {file: changedFile, isPrompt: null}, card.userResponseType, "edited", "added");
         } else { // this means the validateFileResult method returned some sort of error message and we should respond appropriately
             alert(validateFileResult);
             event.target.value = null;
-            updateCard(card.prompt, card.response, card.id, null, card.userResponseType, "edited");
+            updateCard(card.prompt, card.response, card.id, null, card.userResponseType, "edited", "deleted");
         }
     }
     // this function handles a change with the radio button that defines whether an attached file should be displayed as part of a prompt or response
     function handleFileAssociationChange(event) {
         const isPrompt = event.target.value === "prompt"; // indicates whether the file will be associated with a prompt or a response
-        updateCard(card.prompt, card.response, card.id, {file: card.fileJSON.file, isPrompt: isPrompt}, card.userResponseType, "edited");
+        updateCard(card.prompt, card.response, card.id, {file: card.fileJSON.file, isPrompt: isPrompt}, card.userResponseType, "edited", card.fileStatus);
     }
     // this function handles a change with the dropdown that determines what type of response the user should give for the flashcard
     function handleResponseTypeChange(event) {
-        updateCard(card.prompt, card.response, card.id, card.fileJSON, event.target.value, "edited");
+        updateCard(card.prompt, card.response, card.id, card.fileJSON, event.target.value, "edited", card.fileStatus);
     }
     // this function handles a change to the value of the 'prompt' field
     function handlePromptChange(event) {
-        updateCard(event.target.value, card.response, card.id, card.fileJSON, card.userResponseType, "edited");
+        updateCard(event.target.value, card.response, card.id, card.fileJSON, card.userResponseType, "edited", card.fileStatus);
     } 
     // this function handles a change to the value of the 'response' field
     function handleResponseChange(event) {
-        updateCard(card.prompt, event.target.value, card.id, card.fileJSON, card.userResponseType, "edited");
+        updateCard(card.prompt, event.target.value, card.id, card.fileJSON, card.userResponseType, "edited", card.fileStatus);
     } 
 
     // this function is responsible for creating radio button JSX, it allows dynamically determining which button should be checked

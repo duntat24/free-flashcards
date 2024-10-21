@@ -24,12 +24,12 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
                 if (card.data.file !== undefined) { // if the card contains a file
                     let cardFile = card.data.file;
                     return {prompt: card.data.prompt, response: card.data.response, id: card.data._id, 
-                            userResponseType: card.data.userResponseType, modificationStatus: "unchanged", 
+                            userResponseType: card.data.userResponseType, modificationStatus: "unchanged", fileStatus: "unchanged",
                             fileJSON: {data: arrayBufferToBase64(cardFile.data.data), 
                                        fileType: cardFile.fileType, partOfPrompt: cardFile.partOfPrompt}};
                 } 
                 return {prompt: card.data.prompt, response: card.data.response, id: card.data._id, 
-                        userResponseType: card.data.userResponseType, modificationStatus: "unchanged"}
+                        userResponseType: card.data.userResponseType, modificationStatus: "unchanged", fileStatus: "unchanged"}
             });
             setModifiedSet({...newModifiedSet, cards: addedCards}); // adding the fetched card data to the study set
         }).catch((error) => {
@@ -41,7 +41,7 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
     // this adds a blank card to the set we're modifying
     function addCard() { 
         updateCards([...modifiedSet.cards, {id: nextCardIdRef.current, prompt: "", response: "", 
-                    fileJSON: {file: null, isPrompt: null}, userResponseType: "text", modificationStatus: "new"}]);
+                    fileJSON: null, userResponseType: "text", modificationStatus: "new", fileStatus: "unchanged"}]);
         nextCardIdRef.current += 1;
     }
 
@@ -50,16 +50,21 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
         // finding the card with the removed id
         const removedCard = modifiedSet.cards.filter(card => card.id === removedId)[0]; // we access the 0th index because .filter returns an array, in this case the array is always of length 1
         updateCard(removedCard.prompt, removedCard.response, removedCard.id, removedCard.fileJSON, 
-                   removedCard.userResponseType, "deleted"); // setting the card's modification status to deleted
+                   removedCard.userResponseType, "deleted", "deleted"); // setting the card's modification status to deleted
     }
 
     // this updates a flashcard with the provided ID and sets its fields based on the passed parameters
-    function updateCard(newPrompt, newResponse, cardId, newFileJSON, newUserResponseType, newModificationStatus) { // this is used to update cards when the user edits a prompt or response
-        updateCards(modifiedSet.cards.map(card => 
-            card.id === cardId ? {id: cardId, prompt: newPrompt, response: newResponse, 
-                                  fileJSON: newFileJSON, userResponseType: newUserResponseType, 
-                                  modificationStatus: newModificationStatus}: card
-        ));
+    function updateCard(newPrompt, newResponse, cardId, newFileJSON, newUserResponseType, newModificationStatus, newFileStatus) { // this is used to update cards when the user edits a prompt or response
+        updateCards(modifiedSet.cards.map(card => {
+            if (card.id === cardId) {
+                if (card.modificationStatus === "new") {
+                    newModificationStatus = "new";
+                }
+                return {id: cardId, prompt: newPrompt, response: newResponse, fileJSON: newFileJSON, 
+                    userResponseType: newUserResponseType, modificationStatus: newModificationStatus, fileStatus: newFileStatus}
+            }
+            return card;
+        }));
     }
 
     function updateCards(newCardArray) {
@@ -72,6 +77,7 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
 
     // this function makes PUT requests to the API to save our modified study set
     function makeUpdateRequest() {
+
         // first need to validate that all the cards have a valid state - non-empty prompt and response, indicate whether file is for a prompt or response
         if (!validateCards(modifiedSet.cards) || modifiedSet.title === "") {
             alert("Please ensure all entered data is valid"); // there should be more graceful error handling than this
@@ -82,11 +88,18 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
             // (should do this later, for now just get base functionality up)
 
         }
-        const setPostURL = "http://localhost:3001/sets";
+        const setPutURL = "http://localhost:3001/sets";
+        const cardsPutURL = "http://localhost:3001/cards";
         const newSetData = {title: modifiedSet.title};
+        
+        console.log(setPutURL);
+        console.log(cardsPutURL);
+        console.log(newSetData);
 
+        console.log(modifiedSet);
         // TODO: Refactor this request, this is difficult to understand and hard to do proper error handling with
 
+        /*
         axios.post(setPostURL, newSetData).then((response) => {
             const newSetId = response.data._id; // we need the id of the newly created set so we can POST our flashcards to it
             
@@ -134,7 +147,7 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
             The above statement does not always successfully refresh the application's display - sometimes the set does not appear, sometimes it appears with 0 flashcards
             TODO: Likely a race condition, research effective solution
         */
-        window.location.href = "http://localhost:3000"; // redirecting to the home page
+        //window.location.href = "http://localhost:3000"; // redirecting to the home page
     }
     
     let cardList = <></>;
@@ -154,7 +167,6 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
     if (modifiedSet === null) {
         return <><h3>Loading...</h3></>
     }
-    console.log(modifiedSet);
     return <div className="edited-flashcard-set">
         <label htmlFor="set-title">Set Title:</label>
         <button className="add-flashcard-button" onClick={addCard}>Add Card</button><br/>
@@ -203,8 +215,10 @@ function validateCards(cards) {
         if (currentCard.prompt === "" || currentCard.response === "") { // prompt and response can't be empty
             return false;
         }
-        if (currentCard.fileJSON.file !== null && currentCard.fileJSON.isPrompt === null) { // user must indicate where a file should be displayed as part of a card 
-            return false;
+        if (currentCard.fileJSON !== null) {
+            if (currentCard.fileJSON.file !== null && currentCard.fileJSON.isPrompt === null) { // user must indicate where a file should be displayed as part of a card 
+                return false;
+            }
         }
     }
     return true; // all cards are valid if we get here
