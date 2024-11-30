@@ -32,7 +32,6 @@ export default function StudyFlashcards({studySets}) {
                 return {prompt: card.data.prompt, response: card.data.response, userResponseType: card.data.userResponseType}
             });
             setStudiedSet({...studiedSet, cards: addedCards}); // adding the fetched card data to the study set
-            console.log(addedCards);
         }).catch((error) => {
             console.log(error);
         })        

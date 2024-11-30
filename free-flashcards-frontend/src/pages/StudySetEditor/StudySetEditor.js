@@ -89,48 +89,42 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
 
         }
         const setPutURL = "http://localhost:3001/sets";
-        const newSetData = {title: modifiedSet.title};
         
+        requestUpdateSetTitle(modifiedSet.title, setPutURL, modifiedSet.id);
         // TODO: Refactor this request, this is difficult to understand and hard to do proper error handling with
-        axios.put(setPutURL + "/" + modifiedSet.id, newSetData).then(() => {
-            // executing this logic after the response is received ensures we've received the set ID to post to
-            for (let i = 0; i < modifiedSet.cards.length; i++) {
-                let card = modifiedSet.cards[i];
-                if (card.modificationStatus === "unchanged") { continue; }
-                axios.post(setPutURL + "/" + modifiedSet.id, {prompt: card.prompt, response: card.response, 
-                        userResponseType: card.userResponseType}).then((response) => {
-                            // we can't guarantee how many cards will be in the array because of race conditions, but we can guarantee that the card id will be at the end of the array
-                            let responseCards = response.data.cards;
-                            const addedCardId = responseCards[responseCards.length - 1]; 
-                            
-                            // if a file was changed/added we need to add it as well
-                            if (card.fileJSON !== null && card.fileStatus !== "unchanged") {
-                                const formData = new FormData();
-                                formData.append("file", {data: card.fileJSON.data, mimetype: card.fileJSON.fileType}); 
-                                formData.append("partOfPrompt", card.fileJSON.isPrompt);
-                                const requestConfiguration = {
-                                    headers: {
-                                      'content-type': 'multipart/form-data', // important to tell the server what is in the request
-                                    },
-                                };
-                                const addFileRootUrl = "http://localhost:3001/cards" // need to add the targeted card id and the ending "/file"
-                                axios.post(`${addFileRootUrl}/${addedCardId}/file` , formData, requestConfiguration).then((response) => {    
-                                    console.log(response);
-                                    // we should do something to indicate the request was sucessful
-                                }).catch((error) => {
-                                    console.log(error);
-                                    // if the request fails we should indicate it somehow
-                                });
-                            }
-                        }).catch((error) => {
-                            console.log(error);
-                            return; // we need more graceful handling than this, we don't want to partially post a set to the API
-                        });
-            }
-        }).catch((error) => {
-            console.log(error);
-            return; // we should immediately break out of our attempt to create a set if our request fails
-        });
+        for (let i = 0; i < modifiedSet.cards.length; i++) {
+            let card = modifiedSet.cards[i];
+            if (card.modificationStatus === "unchanged") { continue; }
+            axios.post(setPutURL + "/" + modifiedSet.id, {prompt: card.prompt, response: card.response, 
+                    userResponseType: card.userResponseType}).then((response) => {
+                        // we can't guarantee how many cards will be in the array because of race conditions, but we can guarantee that the card id will be at the end of the array
+                        let responseCards = response.data.cards;
+                        const addedCardId = responseCards[responseCards.length - 1]; 
+                        
+                        // if a file was changed/added we need to add it as well
+                        if (card.fileJSON !== null && card.fileStatus !== "unchanged") {
+                            const formData = new FormData();
+                            formData.append("file", {data: card.fileJSON.data, mimetype: card.fileJSON.fileType}); 
+                            formData.append("partOfPrompt", card.fileJSON.isPrompt);
+                            const requestConfiguration = {
+                                headers: {
+                                    'content-type': 'multipart/form-data', // important to tell the server what is in the request
+                                },
+                            };
+                            const addFileRootUrl = "http://localhost:3001/cards" // need to add the targeted card id and the ending "/file"
+                            axios.post(`${addFileRootUrl}/${addedCardId}/file` , formData, requestConfiguration).then((response) => {    
+                                console.log(response);
+                                // we should do something to indicate the request was sucessful
+                            }).catch((error) => {
+                                console.log(error);
+                                // if the request fails we should indicate it somehow
+                            });
+                        }
+                    }).catch((error) => {
+                        console.log(error);
+                        return; // we need more graceful handling than this, we don't want to partially post a set to the API
+                    });
+        };
 
         setRequestStudySets(!requestStudySets); // attempting to save refreshes the application's stored study sets
         /*
@@ -212,4 +206,12 @@ function validateCards(cards) {
         }
     }
     return true; // all cards are valid if we get here
+}
+
+// this method makes a request to update the title of the set matching the specified ID. setURLRoot should not have a trailing '/'
+function requestUpdateSetTitle(newTitle, setURLRoot, setId) {
+    const newSetData = {title: newTitle};
+    axios.put(setURLRoot + "/" + setId, newSetData).catch((error) => {
+        console.log(error); // need more in-depth handling of errors here
+    });
 }
