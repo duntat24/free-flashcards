@@ -57,7 +57,7 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
     function updateCard(newPrompt, newResponse, cardId, newFileJSON, newUserResponseType, newModificationStatus, newFileStatus) { // this is used to update cards when the user edits a prompt or response
         updateCards(modifiedSet.cards.map(card => {
             if (card.id === cardId) {
-                if (card.modificationStatus === "new") {
+                if (card.modificationStatus === "new") { // important to ensure the card is still marked as new when its sent as a request
                     newModificationStatus = "new";
                 }
                 return {id: cardId, prompt: newPrompt, response: newResponse, fileJSON: newFileJSON, 
@@ -89,41 +89,31 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
 
         }
         const setPutURL = "http://localhost:3001/sets";
-        const cardsPutURL = "http://localhost:3001/cards";
         const newSetData = {title: modifiedSet.title};
         
-        console.log(setPutURL);
-        console.log(cardsPutURL);
-        console.log(newSetData);
-
-        console.log(modifiedSet);
         // TODO: Refactor this request, this is difficult to understand and hard to do proper error handling with
-
-        /*
-        axios.post(setPostURL, newSetData).then((response) => {
-            const newSetId = response.data._id; // we need the id of the newly created set so we can POST our flashcards to it
-            
+        axios.put(setPutURL + "/" + modifiedSet.id, newSetData).then(() => {
             // executing this logic after the response is received ensures we've received the set ID to post to
-            const cardPostURL = "http://localhost:3001/sets/" + newSetId;
-            const addFileRootUrl = "http://localhost:3001/cards" // need to add the targeted card id and the ending "/file"
             for (let i = 0; i < modifiedSet.cards.length; i++) {
                 let card = modifiedSet.cards[i];
-                axios.post(cardPostURL, {prompt: card.prompt, response: card.response, 
+                if (card.modificationStatus === "unchanged") { continue; }
+                axios.post(setPutURL + "/" + modifiedSet.id, {prompt: card.prompt, response: card.response, 
                         userResponseType: card.userResponseType}).then((response) => {
                             // we can't guarantee how many cards will be in the array because of race conditions, but we can guarantee that the card id will be at the end of the array
                             let responseCards = response.data.cards;
                             const addedCardId = responseCards[responseCards.length - 1]; 
                             
-                            // if the added card also contains a file we need to add it as well
-                            if (card.fileJSON.file !== null) {
+                            // if a file was changed/added we need to add it as well
+                            if (card.fileJSON !== null && card.fileStatus !== "unchanged") {
                                 const formData = new FormData();
-                                formData.append("file", card.fileJSON.file); 
+                                formData.append("file", {data: card.fileJSON.data, mimetype: card.fileJSON.fileType}); 
                                 formData.append("partOfPrompt", card.fileJSON.isPrompt);
                                 const requestConfiguration = {
                                     headers: {
                                       'content-type': 'multipart/form-data', // important to tell the server what is in the request
                                     },
                                 };
+                                const addFileRootUrl = "http://localhost:3001/cards" // need to add the targeted card id and the ending "/file"
                                 axios.post(`${addFileRootUrl}/${addedCardId}/file` , formData, requestConfiguration).then((response) => {    
                                     console.log(response);
                                     // we should do something to indicate the request was sucessful
@@ -147,7 +137,7 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
             The above statement does not always successfully refresh the application's display - sometimes the set does not appear, sometimes it appears with 0 flashcards
             TODO: Likely a race condition, research effective solution
         */
-        //window.location.href = "http://localhost:3000"; // redirecting to the home page
+        window.location.href = "http://localhost:3000"; // redirecting to the home page only on success
     }
     
     let cardList = <></>;
@@ -215,7 +205,7 @@ function validateCards(cards) {
         if (currentCard.prompt === "" || currentCard.response === "") { // prompt and response can't be empty
             return false;
         }
-        if (currentCard.fileJSON !== null) {
+        if (currentCard.fileJSON !== null && currentCard.fileJSON !== undefined) {
             if (currentCard.fileJSON.file !== null && currentCard.fileJSON.isPrompt === null) { // user must indicate where a file should be displayed as part of a card 
                 return false;
             }
