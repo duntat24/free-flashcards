@@ -17,7 +17,7 @@ export default function DrawnResponseArea({setDrawnResponse}) {
     useEffect(() => {
         const canvas = canvasRef.current; 
         canvas.width = window.innerWidth / 3; // innerWidth is the browser viewport width
-        canvas.height = window.innerWidth / 3; // the drawing area will be a square side length = 1/3rd the browser's height
+        canvas.height = window.innerWidth / 3; // the drawing area will be a square side length = 1/3rd the browser's width
         canvas.style.width = `${window.innerWidth / 3}px`;
         canvas.style.height = `${window.innerWidth / 3}px`;
 

@@ -57,7 +57,7 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
     function updateCard(newPrompt, newResponse, cardId, newFileJSON, newUserResponseType, newModificationStatus, newFileStatus) { // this is used to update cards when the user edits a prompt or response
         updateCards(modifiedSet.cards.map(card => {
             if (card.id === cardId) {
-                if (card.modificationStatus === "new") { // important to ensure the card is still marked as new when its sent as a request
+                if (card.modificationStatus === "new") { // important to ensure the card is still marked as new when it's sent as a request
                     newModificationStatus = "new";
                 }
                 return {id: cardId, prompt: newPrompt, response: newResponse, fileJSON: newFileJSON, 
@@ -88,50 +88,33 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
             // (should do this later, for now just get base functionality up)
 
         }
-        const setPutURL = "http://localhost:3001/sets";
-        
-        requestUpdateSetTitle(modifiedSet.title, setPutURL, modifiedSet.id);
-        // TODO: Refactor this request, this is difficult to understand and hard to do proper error handling with
-        for (let i = 0; i < modifiedSet.cards.length; i++) {
-            let card = modifiedSet.cards[i];
-            if (card.modificationStatus === "unchanged") { continue; }
-            axios.post(setPutURL + "/" + modifiedSet.id, {prompt: card.prompt, response: card.response, 
-                    userResponseType: card.userResponseType}).then((response) => {
-                        // we can't guarantee how many cards will be in the array because of race conditions, but we can guarantee that the card id will be at the end of the array
-                        let responseCards = response.data.cards;
-                        const addedCardId = responseCards[responseCards.length - 1]; 
-                        
-                        // if a file was changed/added we need to add it as well
-                        if (card.fileJSON !== null && card.fileStatus !== "unchanged") {
-                            const formData = new FormData();
-                            formData.append("file", {data: card.fileJSON.data, mimetype: card.fileJSON.fileType}); 
-                            formData.append("partOfPrompt", card.fileJSON.isPrompt);
-                            const requestConfiguration = {
-                                headers: {
-                                    'content-type': 'multipart/form-data', // important to tell the server what is in the request
-                                },
-                            };
-                            const addFileRootUrl = "http://localhost:3001/cards" // need to add the targeted card id and the ending "/file"
-                            axios.post(`${addFileRootUrl}/${addedCardId}/file` , formData, requestConfiguration).then((response) => {    
-                                console.log(response);
-                                // we should do something to indicate the request was sucessful
-                            }).catch((error) => {
-                                console.log(error);
-                                // if the request fails we should indicate it somehow
-                            });
-                        }
-                    }).catch((error) => {
-                        console.log(error);
-                        return; // we need more graceful handling than this, we don't want to partially post a set to the API
-                    });
-        };
+        const setURL = "http://localhost:3001/sets";
+        const cardURL = "http://localhost:3001/cards";
+        requestUpdateSetTitle(modifiedSet.title, setURL, modifiedSet.id);
+        Promise.all(
+            modifiedSet.cards.map((card) => {
+                if (card.modificationStatus === "unchanged") { return Promise.resolve(" ") } // we don't want to make a request for an unmodified card
+                else if (card.modificationStatus === "new") {
+                    return requestAddNewFlashcard(setURL, modifiedSet.id, card);
+                } else if (card.modificationStatus === "deleted") {
+                    return requestDeleteFlashcard(setURL, modifiedSet.id, card);
+                } else { // if we get here then the card is an existing card that has been edited
+                    return requestUpdateFlashcard(cardURL, card);
+                }
+            })
+        ).then(() => {
+            alert("Set updated successfully!");
+        }).catch((error) => {
+            alert("An error occurred. Check the console");
+            console.log(error);
+        })
 
         setRequestStudySets(!requestStudySets); // attempting to save refreshes the application's stored study sets
         /*
             The above statement does not always successfully refresh the application's display - sometimes the set does not appear, sometimes it appears with 0 flashcards
             TODO: Likely a race condition, research effective solution
         */
-        window.location.href = "http://localhost:3000"; // redirecting to the home page only on success
+        // location.href = "http://localhost:3000"; // redirecting to the home page only on succeswindow.s
     }
     
     let cardList = <></>;
@@ -152,10 +135,10 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
         return <><h3>Loading...</h3></>
     }
     return <div className="edited-flashcard-set">
-        <label htmlFor="set-title">Set Title:</label>
-        <button className="add-flashcard-button" onClick={addCard}>Add Card</button><br/>
+        <label htmlFor="set-title">Set Title:   </label>
         <input type="text" name="set-title" id="set-title" value={modifiedSet ? modifiedSet.title : "No title :("} 
-            onChange={(e) => updateSetTitle(e.target.value)}></input>
+            onChange={(e) => updateSetTitle(e.target.value)}></input> <br/>
+        <button className="add-flashcard-button" onClick={addCard}>Add Card</button><br/>
         <ul className="new-card-list">
             {cardList}
         </ul>
@@ -208,10 +191,78 @@ function validateCards(cards) {
     return true; // all cards are valid if we get here
 }
 
-// this method makes a request to update the title of the set matching the specified ID. setURLRoot should not have a trailing '/'
-function requestUpdateSetTitle(newTitle, setURLRoot, setId) {
+// this method makes a request to update the title of the set matching the specified ID
+// NOTE: setRootUrl should not have a trailing '/'
+async function requestUpdateSetTitle(newTitle, setRootUrl, setId) {
     const newSetData = {title: newTitle};
-    axios.put(setURLRoot + "/" + setId, newSetData).catch((error) => {
-        console.log(error); // need more in-depth handling of errors here
+    return axios.put(setRootUrl + "/" + setId, newSetData).catch((error) => {
+        console.log(error); // TODO need more in-depth handling of errors here
+    });
+}
+
+// this method updates the specified flashcard and its file
+// NOTE: cardRootURL should not have a trailing '/'
+async function requestUpdateFlashcard(cardRootURL, card) {
+    return axios.put(cardRootURL + "/" + card.id, {prompt: card.prompt, response: card.response, 
+        userResponseType: card.userResponseType}).then(() => {
+            if (card.fileJSON.fileStatus === "deleted") {
+                requestRemoveFlashcardFile(cardRootURL, card.id)
+            } else if (card.fileJSON.fileStatus === "added" || card.fileJSON.fileStatus === "edited") {
+                requestAddFlashcardFile(card.id, card.fileJSON);
+            }  
+        }).catch((error) => {
+            console.log(error); // TODO: need better error handling here
+        });
+}
+
+// this method makes a request to add a new flashcard to a set with the root of the URL, the ID of the set, and the card's data
+// NOTE: setRootUrl should not have a trailing '/'
+async function requestAddNewFlashcard(setRootURL, addedSetId, card) {
+    return axios.post(setRootURL + "/" + addedSetId, {prompt: card.prompt, response: card.response, 
+        userResponseType: card.userResponseType}).then((response) => {
+            console.log(card);
+            if (card.fileJSON !== null) { // this means there is a file in the newly created card that we have to create
+                let responseCards = response.data.cards;
+                const addedCardId = responseCards[responseCards.length - 1]; // we can't guarantee how many cards will be in the array, but we can guarantee that our newly added card will be at the end
+                requestAddFlashcardFile(addedCardId, card.fileJSON);
+            }
+    }).catch((error) => {
+        console.log(error);
+        // TODO need proper error handling here
+    });
+}
+
+// this method makes a request to delete the specified flashcard within the specified set
+// NOTE: setRootURL should not have a trailing '/'
+async function requestDeleteFlashcard(setRootURL, targetSetId, card) {
+    return axios.delete(`${setRootURL}/${targetSetId}/${card.id}`).catch((error) => {
+        console.log(error);
+        // TODO need proper error handling here
+    })
+}
+
+// this function returns a promise that contains a request to add a file to the specified flashcard
+// NOTE: This functionality is needed in many places, extract to a module & export?
+async function requestAddFlashcardFile(cardId, addedFileJSON) {
+    console.log("Adding file");
+    const formData = new FormData();
+    formData.append("file", addedFileJSON.file); 
+    formData.append("partOfPrompt", addedFileJSON.isPrompt);
+    const requestConfiguration = {
+        headers: {
+            'content-type': 'multipart/form-data', // important to tell the server what is in the request
+        },
+    };
+    const fileRootURL = "http://localhost:3001/cards"
+    return axios.post(`${fileRootURL}/${cardId}/file` , formData, requestConfiguration).catch((error) => {
+        console.log(error);
+        // TODO need better error handling
+    });
+}
+
+// this function removes any attached file from the specified card
+async function requestRemoveFlashcardFile(cardRootURL, cardId) {
+    return axios.delete(`${cardRootURL}/${cardId}/file`).catch((error) => {
+        console.log(error); // TODO: need proper error handling here
     });
 }

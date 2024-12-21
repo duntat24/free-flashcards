@@ -19,7 +19,7 @@ export default function EditableFlashcard({card, removeCard, updateCard}) {
     // this function handles a change with the radio button that defines whether an attached file should be displayed as part of a prompt or response
     function handleFileAssociationChange(event) {
         const isPrompt = event.target.value === "prompt"; // indicates whether the file will be associated with a prompt or a response
-        updateCard(card.prompt, card.response, card.id, {file: card.fileJSON.file, isPrompt: isPrompt}, card.userResponseType, "edited", card.fileStatus);
+        updateCard(card.prompt, card.response, card.id, {file: card.fileJSON.file, isPrompt: isPrompt}, card.userResponseType, "edited", "edited");
     }
     // this function handles a change with the dropdown that determines what type of response the user should give for the flashcard
     function handleResponseTypeChange(event) {
