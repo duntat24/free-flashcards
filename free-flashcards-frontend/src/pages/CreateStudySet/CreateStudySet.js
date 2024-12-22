@@ -1,5 +1,6 @@
 import NewFlashcard from './NewFlashcard.js';
 import { useState, useRef } from 'react';
+import { requestCreateSet, requestAddNewFlashcard } from '../../requests.js';
 import axios from 'axios';
 
 export default function CreateFlashcardSet({requestStudySets, setRequestStudySets}) {
@@ -36,63 +37,22 @@ export default function CreateFlashcardSet({requestStudySets, setRequestStudySet
             // (should do this later, for now just get base functionality up)
 
         }
-        const setPostURL = "http://localhost:3001/sets";
-        const newSetData = {title: setTitle};
 
-        // TODO: Refactor this request, this is difficult to understand and hard to do proper error handling with
-
-        axios.post(setPostURL, newSetData).then((response) => {
-            const newSetId = response.data._id; // we need the id of the newly created set so we can POST our flashcards to it
-            
-            // executing this logic after the response is received ensures we've received the set ID to post to
-            const cardPostURL = "http://localhost:3001/sets/" + newSetId;
-            const addFileRootUrl = "http://localhost:3001/cards" // need to add the targeted card id and the ending "/file"
-            for (let i = 0; i < cards.length; i++) {
-                let card = cards[i];
-                axios.post(cardPostURL, {prompt: card.prompt, response: card.response, 
-                        userResponseType: card.userResponseType}).then((response) => {
-                            // we can't guarantee how many cards will be in the array because of race conditions, but we can guarantee that the card id will be at the end of the array
-                            let responseCards = response.data.cards;
-                            const addedCardId = responseCards[responseCards.length - 1]; 
-                            
-                            // if the added card also contains a file we need to add it as well
-                            if (card.fileJSON.file !== null) {
-                                const formData = new FormData();
-                                formData.append("file", card.fileJSON.file); 
-                                formData.append("partOfPrompt", card.fileJSON.isPrompt);
-                                const requestConfiguration = {
-                                    headers: {
-                                      'content-type': 'multipart/form-data', // important to tell the server what is in the request
-                                    },
-                                };
-                                axios.post(`${addFileRootUrl}/${addedCardId}/file` , formData, requestConfiguration).then((response) => {    
-                                    console.log(response);
-                                    // we should do something to indicate the request was sucessful
-                                }).catch((error) => {
-                                    console.log(error);
-                                    // if the request fails we should indicate it somehow
-                                });
-                            }
-                        }).catch((error) => {
-                            console.log(error);
-                            return; // we need more graceful handling than this, we don't want to partially post a set to the API
-                        });
-            }
+        Promise.all(
+            [requestCreateSet(setTitle)]
+        ).then((response) => {
+            const createdSetId = response[0].data._id;
+            Promise.all(cards.map((card) => {
+                return requestAddNewFlashcard(createdSetId, card);
+            }))
+        }).then(() => {
+            setRequestStudySets(!requestStudySets); // attempting to save refreshes the application's stored study sets
+            alert("Set created successfully!"); 
+            window.location.href = "http://localhost:3000"; // redirecting to the home page only on success
         }).catch((error) => {
             console.log(error);
-            return; // we should immediately break out of our attempt to create a set if our request fails
         });
-
-        setRequestStudySets(!requestStudySets); // attempting to save refreshes the application's stored study sets
-        /*
-            The above statement does not always successfully refresh the application's display - sometimes the set does not appear, sometimes it appears with 0 flashcards
-            TODO: Likely a race condition, updating the stored study sets shows a newly created set with 0 cards in it
-        */
-
-        // this clears the cards and title of the set we were creating on the frontend so users can more easily create another new study set
-        updateCards([]); 
-        updateSetTitle("");
- 
+        
     }
 
     // this contains the JSX for the interface to allow users to modify the flashcards that will be added to the new set

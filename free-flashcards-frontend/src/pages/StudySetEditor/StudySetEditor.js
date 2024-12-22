@@ -114,7 +114,7 @@ export default function StudySetEditor({studySets, updateSet, requestStudySets, 
             The above statement does not always successfully refresh the application's display - sometimes the set does not appear, sometimes it appears with 0 flashcards
             TODO: Likely a race condition, research effective solution
         */
-        // location.href = "http://localhost:3000"; // redirecting to the home page only on succeswindow.s
+        // window.location.href = "http://localhost:3000"; // redirecting to the home page only on success
     }
     
     let cardList = <></>;
@@ -220,7 +220,6 @@ async function requestUpdateFlashcard(cardRootURL, card) {
 async function requestAddNewFlashcard(setRootURL, addedSetId, card) {
     return axios.post(setRootURL + "/" + addedSetId, {prompt: card.prompt, response: card.response, 
         userResponseType: card.userResponseType}).then((response) => {
-            console.log(card);
             if (card.fileJSON !== null) { // this means there is a file in the newly created card that we have to create
                 let responseCards = response.data.cards;
                 const addedCardId = responseCards[responseCards.length - 1]; // we can't guarantee how many cards will be in the array, but we can guarantee that our newly added card will be at the end
@@ -244,7 +243,6 @@ async function requestDeleteFlashcard(setRootURL, targetSetId, card) {
 // this function returns a promise that contains a request to add a file to the specified flashcard
 // NOTE: This functionality is needed in many places, extract to a module & export?
 async function requestAddFlashcardFile(cardId, addedFileJSON) {
-    console.log("Adding file");
     const formData = new FormData();
     formData.append("file", addedFileJSON.file); 
     formData.append("partOfPrompt", addedFileJSON.isPrompt);

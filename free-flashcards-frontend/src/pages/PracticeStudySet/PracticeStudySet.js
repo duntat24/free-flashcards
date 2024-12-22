@@ -19,8 +19,12 @@ export default function StudyFlashcards({studySets}) {
         if (studiedSet === null || studiedSet === undefined) { // if the targeted study set doesn't exist we shouldnt be trying to fetch its cards
             return;
         }
+        console.log(studiedSet.cardIds);
         Promise.all(
-            studiedSet.cardIds.map((cardId) => axios.get(`${cardsUrl}${cardId}`)) 
+            studiedSet.cardIds.map((cardId) => {
+                console.log(cardId);
+                return axios.get(`${cardsUrl}${cardId}`)
+            }) 
         ).then((data) => { // letting all the promises resolve before continuing
             let addedCards = data.map((card) => { // creating an array containing all the fetched card data from the API
                 if (card.data.file !== undefined) { // if the card contains a file

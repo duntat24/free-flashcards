@@ -39,15 +39,18 @@ export default function EditableFlashcard({card, removeCard, updateCard}) {
     // the buttonType parameter indicates whether this is the prompt or response radio button
     function generateRadioButtonJSX(buttonType) {
         if (card.fileJSON === null || card.fileJSON === undefined) {
+            console.log("Not displaying any file radio buttons")
             return <></>; // no need to generate this JSX if there is no file to associate with it
         }
         if ((buttonType === "prompt" && card.fileJSON.partOfPrompt) || (buttonType === "response" && !card.fileJSON.partOfPrompt)) {
+            console.log("Displaying radio buttons for file being part of a prompt")
             return <>
                 <input type="radio" id={`file-for-${buttonType}${card.id}`} name="file-association" value={buttonType}
                     onChange={handleFileAssociationChange} checked/>
                 <label htmlFor={"file-for-prompt" + (card.id)}>Prompt</label>
             </>
         }
+        console.log("Displaying radio buttons for file being part of a prompt")
         return <>
             <input type="radio" id={`file-for-${buttonType}${card.id}`} name="file-association" value={buttonType}
                 onChange={handleFileAssociationChange}/>

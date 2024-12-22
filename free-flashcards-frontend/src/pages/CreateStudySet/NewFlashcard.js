@@ -1,10 +1,5 @@
-import { useState } from 'react';
-
 export default function NewFlashcard({card, removeCard, updateCard}) {
     const MAX_FILE_SIZE = 500000; // defines maximum file size in bytes
-
-    // this contains a file that may be associated with this flashcard
-    const [file, setFile] = useState(null);
 
     // this function handles a change to the uploaded file when the user either adds a new file or removes their attached file
     function handleUploadChange(event) { 
@@ -12,16 +7,13 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
 
         const validateFileResult = validateFileInput(changedFile, MAX_FILE_SIZE);
         if (validateFileResult === null) { // this means there is no file attached to the card
-            setFile(null);
-            updateCard(card.prompt, card.response, card.id, {file: null, isPrompt: null}, card.userResponseType);
+            updateCard(card.prompt, card.response, card.id, null, card.userResponseType);
         } else if (validateFileResult === "") { // validateFileInput returns the appropriate error message if a file input is invalid
-            setFile(changedFile);
             updateCard(card.prompt, card.response, card.id, {file: changedFile, isPrompt: card.fileJSON.isPrompt}, card.userResponseType);
         } else { // this means the validateFileResult method returned some sort of error message and we should respond appropriately
             alert(validateFileResult);
             event.target.value = null;
-            setFile(null);
-            updateCard(card.prompt, card.response, card.id, {file: null, isPrompt: null}, card.userResponseType);
+            updateCard(card.prompt, card.response, card.id, null, card.userResponseType);
         }
     }
     // this function handles a change with the radio button that defines whether an attached file should be displayed as part of a prompt or response
@@ -70,7 +62,7 @@ export default function NewFlashcard({card, removeCard, updateCard}) {
         </select>
         
         <input type="file" onChange={handleUploadChange}/>
-        {file === null ? <></> : fileAssociationJSX}
+        {card.fileJSON === null ? <></> : fileAssociationJSX}
         
         <button className="delete-new-flaschard-button" onClick={() => removeCard(card.id)}>Del</button>
     </form>
