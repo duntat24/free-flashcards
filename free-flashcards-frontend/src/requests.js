@@ -41,13 +41,13 @@ export async function requestUpdateFlashcard(cardRootURL, card) {
 }
 
 /**
- * This method makes a request to create a new study flashcard with specified information and returns a promise that resolves
+ * This method makes a request to create a new study flashcard with specified information and returns a promise that is fulfilled
  * when a response is received from the server. 
  * 
  * @param {String} addedSetId A string containing the ID of the set the card is being added to
  * @param {JSON} card A JSON representation of a flashcard including a prompt, response, user response type, 
  *                    and a fileJSON containing data about the file associated with the flashcard (if applicable)
- * @returns a promise that resolves when a response is received indicating whether the card has been successfully created or not
+ * @returns a promise that is fulfilled when a response is received indicating whether the card has been successfully created or not
  */
 export async function requestAddNewFlashcard(addedSetId, card) {
     return axios.post(setRootURL + "/" + addedSetId, {prompt: card.prompt, response: card.response, 
@@ -61,6 +61,20 @@ export async function requestAddNewFlashcard(addedSetId, card) {
         console.log(error);
         // TODO need proper error handling here
     });
+}
+
+/**
+ * This function makes a request to the server to delete the set with the specified ID. It returns a promise 
+ * that is fulfilled upon receiving a response
+ * 
+ * @param {String} setId the ID of the set being deleted 
+ * @returns A promise that is fulfilled upon receiving the server's response
+ */
+export async function requestDeleteSet(setId) {
+    return axios.delete(`${setRootURL}/${setId}`).catch((error) => {
+        console.log(error);
+        // TODO need proper error handling here
+    })
 }
 
 // this method makes a request to delete the specified flashcard within the specified set

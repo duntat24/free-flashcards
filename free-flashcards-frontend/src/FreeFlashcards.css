@@ -31,9 +31,6 @@ ul.sets-list > li {
 ul.sets-list > li:hover {
   background-color: lightgray;
 }
-ul.sets-list > li:active {
-  background-color: darkgray;
-}
 .set-display-title {
   margin: 0;
   border: 1px solid darkgray;
@@ -88,3 +85,26 @@ ul.sets-list > li:active {
 .drawing-canvas {
   border: 1px solid grey;
 }
+.delete-popup-container, .delete-popup-overlay {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.delete-popup-overlay {
+  background-color: rgba(52, 52, 52, 0.85);
+}
+.delete-popup-content {
+  background-color: white;
+  width: 100vh;
+  margin: auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  padding: 0.5vh;
+} 

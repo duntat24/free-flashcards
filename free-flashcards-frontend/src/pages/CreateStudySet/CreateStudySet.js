@@ -38,14 +38,14 @@ export default function CreateFlashcardSet({requestStudySets, setRequestStudySet
 
         }
 
-        Promise.all(
+        Promise.all( // we first need to create the set we're going to add our flashcards to
             [requestCreateSet(setTitle)]
-        ).then((response) => {
+        ).then((response) => { // upon getting our response we get the ID of the created set so we can add cards to that id
             const createdSetId = response[0].data._id;
             Promise.all(cards.map((card) => {
                 return requestAddNewFlashcard(createdSetId, card);
             }))
-        }).then(() => {
+        }).then(() => { // we've successfully added all cards!
             setRequestStudySets(!requestStudySets); // attempting to save refreshes the application's stored study sets
             alert("Set created successfully!"); 
             window.location.href = "http://localhost:3000"; // redirecting to the home page only on success

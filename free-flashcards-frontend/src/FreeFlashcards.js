@@ -38,7 +38,7 @@ export default function FlashcardApp() {
   // this holds the content on the page where users can study their created sets
   // needs a quiz mode to allow for free response as well as drawn & recorded responses
 
-  // using ':<variable_name>' in routes allows us to have paths with variables (such as object ids that we will be fetching)
+  // using ':variable_name' in routes allows us to have paths with variables (such as object ids that we will be fetching)
   return <div className="whole-page">
     <Navbar/>
     <Routes> 
@@ -47,7 +47,9 @@ export default function FlashcardApp() {
                                     requestStudySets={requestStudySets}
                                   />}/>
       <Route path="/*" element={<ViewStudySets
-                                studySets={studySets}  
+                                 studySets={studySets}  
+                                 setRequestStudySets={setRequestStudySets}
+                                 requestStudySets={requestStudySets}
                               />}/>
       <Route path="/sets/:id/edit" element={<StudySetEditor
                                               studySets={studySets}
